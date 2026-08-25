@@ -1,0 +1,42 @@
+::: {.callout-warning}### 🚧 正在编写中 (Work in Progress)
+本书稿目前处于初稿撰写阶段，各章节内容与数学推导可能随时调整。如发现任何错漏，欢迎在 [GitHub Issues](https://github.com/<用户名>/<仓库名>/issues) 中提出反馈。
+:::
+
+# Preface {.unnumbered}
+
+This is a Quarto book.
+
+To learn more about Quarto books visit <https://quarto.org/docs/books>.
+
+```julia
+interestRateDeterminer = add_agent!(
+    model,
+    interest_rate_spec;
+    variable_names=[
+        :r1,
+        :r2,
+        :r3,
+        :terminal_full_price,
+    ],
+    variable_start=[
+        1.0 / 3.0,
+        1.0 / 2.0,
+        1.0,
+        1.0 / 3.0,
+    ],
+    variable_lower_bounds=(-Inf),
+    variable_upper_bounds=Inf,
+    observed_variables=[
+        PriceVariableRef(Symbol(:money_, i))
+        for i in 1:4
+    ],
+    name=:interestRateDeterminer,
+)
+```
+
+
+
+
+
+
+<!-- 冯·诺伊曼均衡模型、结构均衡模型和广义结构均衡模型均属于本征系统形式的均衡模型。从数学形式上看，应用型的一般均衡模型具有各种各样的表示形式，例如极小极大不等式形式、不动点形式、变分不等式形式、互补问题形式以及本征系统形式等。针对不同的研究问题，可以选择适当的表示形式。其中，樊畿（Ky Fan）型均衡不等式是一种具有高度统一性的表示形式。这类均衡问题可以将优化问题、互补问题、不动点问题、变分不等式和纳什均衡问题等作为其特殊情形（Blum，Oettli，1994；Anh，Ansari，2021）。Ky Fan极小极大不等式为上述均衡问题在适当条件下的均衡点存在性提供了理论依据，并且在一定意义上，它和KKM定理、Sperner引理、布劳威尔不动点定理，角谷不动点定理等价（田国强，2024，第120页）。对于互补问题形式的均衡模型，可以使用Julia调用PATH求解器求解。 -->

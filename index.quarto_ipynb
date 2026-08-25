@@ -1,0 +1,44 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "# Preface {.unnumbered}\n",
+        "\n",
+        "This is a Quarto book.\n",
+        "\n",
+        "To learn more about Quarto books visit <https://quarto.org/docs/books>.\n",
+        "\n",
+        "\n",
+        "\n",
+        "\n",
+        "\n",
+        "\n",
+        "```{julia}\n",
+        "1 + 1\n",
+        "```\n",
+        "\n",
+        "\n",
+        "\n",
+        "\n",
+        "\n",
+        "\n",
+        "设厂商活动水平为$z$，普通投入价值为\n",
+        "\\begin{equation}\n",
+        "B(z,\\mathbf p)=\\mathbf p_x^{\\top}\\mathbf x(z,\\mathbf p)\n",
+        "\\end{equation}"
+      ],
+      "id": "b229309b"
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "display_name": "Python 3",
+      "language": "python",
+      "name": "python3"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 5
+}

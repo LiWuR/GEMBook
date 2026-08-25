@@ -1,0 +1,7 @@
+# References {.unnumbered}
+
+LI Wu (2019) General Equilibrium and Structural Dynamics: Perspectives of New Structural Economics. Beijing: Economic Science Press. (In Chinese)
+
+<!-- ::: {#refs} 
+:::
+-->

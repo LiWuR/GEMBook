@@ -1,0 +1,113 @@
+# SEM
+## 第一节
+### 小节
+
+设厂商活动水平为$z$，普通投入价值为
+\begin{equation}
+\mathbf B(z,\mathbf p)=\mathbf p_x^{\top}\mathbf x(z,\mathbf p)
+\perp
+\end{equation}
+
+\section{1}
+\subsection{1.1}
+
+```Julia
+
+
+
+using GEM
+using GEMB
+firm = build_agent(
+    CESSpec([0.5, 0.5]);
+    output_indices=[1],
+    demand_indices=[1, 2],
+    activity_start=40.0,
+    name=:firm,
+)
+
+
+
+laborer = build_agent(
+    CESSpec([0.8, 0.2]);
+    demand_indices=[1, 2],
+    endowment_indices=[2],
+    endowment_quantities=[100.0],
+    activity_start=20.0,
+    name=:laborer,
+)
+
+
+
+
+model = EquilibriumModel(
+    [firm, laborer],
+    [:prod, :lab],
+)
+
+
+result = solve_equilibrium_model_mcp_jump(
+    model;
+    p0=[1.0, 0.25],
+    residual_tol=1.0e-8,
+    silent=true,
+)
+
+firm_activity =
+    result.agent_variable_values[1][1]
+
+laborer_utility =
+    result.agent_variable_values[2][1]
+
+println("============ GEMB CES: 2 commodities, 2 agents ============")
+println("Solved:          ", result.solved)
+println("Prices:          ", result.prices)
+println("Firm activity:   ", firm_activity)
+println("Laborer utility: ", laborer_utility)
+println("Firm net supply: ", result.agent_net_supplies[1])
+println("Laborer supply:  ", result.agent_net_supplies[2])
+println("Total supply:    ", result.total_net_supply)
+println("Max residual:    ", result.max_natural_residual)
+println("============================================================")
+
+@assert result.solved
+@assert result.mcp_solved
+
+@assert isapprox(
+    result.prices,
+    [1.0, 0.25];
+    atol=1.0e-7,
+    rtol=1.0e-7,
+)
+
+@assert isapprox(
+    firm_activity,
+    40.0;
+    atol=1.0e-7,
+    rtol=1.0e-7,
+)
+
+@assert isapprox(
+    laborer_utility,
+    20.0;
+    atol=1.0e-7,
+    rtol=1.0e-7,
+)
+
+@assert isapprox(
+    result.agent_net_supplies[1],
+    [20.0, -80.0];
+    atol=1.0e-7,
+    rtol=1.0e-7,
+)
+
+@assert isapprox(
+    result.agent_net_supplies[2],
+    [-20.0, 80.0];
+    atol=1.0e-7,
+    rtol=1.0e-7,
+)
+
+@assert maximum(abs, result.total_net_supply) <= 1.0e-7
+@assert result.max_natural_residual <= 1.0e-8
+
+```

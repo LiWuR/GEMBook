@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.57">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>1&nbsp; The von Neumann Equilibrium Model and Structural Equilibrium Models – GeneralEquilibriumModeling.jl and Structural Equilibrium Models</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./Ch2GEM.html" rel="next">
+<link href="./index.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Ch1SEM.html"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">The von Neumann Equilibrium Model and Structural Equilibrium Models</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">GeneralEquilibriumModeling.jl and Structural Equilibrium Models</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Ch1SEM.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">The von Neumann Equilibrium Model and Structural Equilibrium Models</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Ch2GEM.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">The GEMB High-Level Framework, the GEMB Low-Level Framework, and the GEM Framework</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Ch3PureExch.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Static Pure-Exchange Equilibrium</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Ch4ProdBasic.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Static Equilibrium with Production: Basic Models</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Ch5ProdExtended.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Static Equilibrium with Production: Extended Models</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Ch6Intertemporal.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Intertemporal Equilibrium</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#the-eigensystem-form-of-general-equilibrium-models" id="toc-the-eigensystem-form-of-general-equilibrium-models" class="nav-link active" data-scroll-target="#the-eigensystem-form-of-general-equilibrium-models"><span class="header-section-number">1.1</span> The Eigensystem Form of General Equilibrium Models</a>
+  <ul class="collapse">
+  <li><a href="#eigenvalue-equations-and-the-von-neumann-equilibrium-model" id="toc-eigenvalue-equations-and-the-von-neumann-equilibrium-model" class="nav-link" data-scroll-target="#eigenvalue-equations-and-the-von-neumann-equilibrium-model"><span class="header-section-number">1.1.1</span> Eigenvalue Equations and the von Neumann Equilibrium Model</a></li>
+  <li><a href="#structural-equilibrium-models" id="toc-structural-equilibrium-models" class="nav-link" data-scroll-target="#structural-equilibrium-models"><span class="header-section-number">1.1.2</span> Structural Equilibrium Models</a></li>
+  </ul></li>
+  <li><a href="#complementarity-relations-in-the-von-neumann-equilibrium-model" id="toc-complementarity-relations-in-the-von-neumann-equilibrium-model" class="nav-link" data-scroll-target="#complementarity-relations-in-the-von-neumann-equilibrium-model"><span class="header-section-number">1.2</span> Complementarity Relations in the von Neumann Equilibrium Model</a></li>
+  <li><a href="#mixed-complementarity-problems-and-their-solution-in-julia" id="toc-mixed-complementarity-problems-and-their-solution-in-julia" class="nav-link" data-scroll-target="#mixed-complementarity-problems-and-their-solution-in-julia"><span class="header-section-number">1.3</span> Mixed Complementarity Problems and Their Solution in Julia</a>
+  <ul class="collapse">
+  <li><a href="#mixed-complementarity-formulation-and-numerical-solution" id="toc-mixed-complementarity-formulation-and-numerical-solution" class="nav-link" data-scroll-target="#mixed-complementarity-formulation-and-numerical-solution"><span class="header-section-number">1.3.1</span> Mixed Complementarity Formulation and Numerical Solution</a></li>
+  <li><a href="#general-equilibrium-modeling-frameworks" id="toc-general-equilibrium-modeling-frameworks" class="nav-link" data-scroll-target="#general-equilibrium-modeling-frameworks"><span class="header-section-number">1.3.2</span> General Equilibrium Modeling Frameworks</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">The von Neumann Equilibrium Model and Structural Equilibrium Models</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="the-eigensystem-form-of-general-equilibrium-models" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="the-eigensystem-form-of-general-equilibrium-models"><span class="header-section-number">1.1</span> The Eigensystem Form of General Equilibrium Models</h2>
+<section id="eigenvalue-equations-and-the-von-neumann-equilibrium-model" class="level3" data-number="1.1.1">
+<h3 data-number="1.1.1" class="anchored" data-anchor-id="eigenvalue-equations-and-the-von-neumann-equilibrium-model"><span class="header-section-number">1.1.1</span> Eigenvalue Equations and the von Neumann Equilibrium Model</h3>
+<p>Applied general equilibrium models can be represented in a variety of mathematical forms. An eigensystem is one important representation. It reveals the dual structure between prices and activity levels; when the model takes the form of an eigenvalue inequality system, it can also characterize the associated complementarity relations.</p>
+<p>For a square matrix <span class="math inline">\(\mathbf A\)</span>, the corresponding left and right eigenvalue equations can be written as</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathbf p^{\top}\mathbf A
+&amp;=\rho\mathbf p^{\top}\\
+\mathbf A\mathbf z
+&amp;=\rho\mathbf z
+\end{aligned}
+\]</span></p>
+<p>where <span class="math inline">\(\mathbf p\)</span> and <span class="math inline">\(\mathbf z\)</span> are the left and right eigenvectors, respectively, and <span class="math inline">\(\rho\)</span> is the eigenvalue. Extending the eigenvalue equations for a square matrix to two <span class="math inline">\(n\times m\)</span> matrices, <span class="math inline">\(\mathbf A\)</span> and <span class="math inline">\(\mathbf B\)</span>, and relaxing the equalities to inequalities gives the generalized eigenvalue inequality system</p>
+<p><span id="eq-vonNeumannModel"><span class="math display">\[
+\begin{aligned}
+\mathbf p^{\top}\mathbf A
+&amp;\geq\rho\mathbf p^{\top}\mathbf B\\
+\mathbf A\mathbf z
+&amp;\leq\rho\mathbf B\mathbf z
+\end{aligned}
+\tag{1.1}\]</span></span></p>
+<p>The von Neumann general equilibrium model is precisely such an eigenvalue inequality system (von Neumann, 1945; Kemeny, Morgenstern, and Thompson, 1956). Here, <span class="math inline">\(\mathbf A\)</span> and <span class="math inline">\(\mathbf B\)</span> are the input coefficient matrix and output coefficient matrix, respectively, <span class="math inline">\(\mathbf p\geq\mathbf 0\)</span> is the price vector, and <span class="math inline">\(\mathbf z\geq\mathbf 0\)</span> is the activity-level vector. The first inequality states that the input value of each production activity is no less than its discounted output value, while the second states that the total input of each commodity does not exceed its discounted total output. The scalar <span class="math inline">\(\rho\)</span> is the eigenvalue of the system and, economically, represents the discount factor corresponding to the equilibrium growth rate. If the equilibrium growth rate is <span class="math inline">\(\gamma\)</span>, then</p>
+<p><span class="math display">\[
+\rho=\frac{1}{1+\gamma}
+\]</span></p>
+</section>
+<section id="structural-equilibrium-models" class="level3" data-number="1.1.2">
+<h3 data-number="1.1.2" class="anchored" data-anchor-id="structural-equilibrium-models"><span class="header-section-number">1.1.2</span> Structural Equilibrium Models</h3>
+<p>The (strict-sense) structural equilibrium model extends the input and output coefficient matrices in the von Neumann model to matrix-valued functions which usually involve consumers’ utilities (Li, 2019, chapter 3):</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathbf p^{\top}\mathbf A(\mathbf p,\mathbf u,\mathbf z)
+&amp;\geq
+\rho\mathbf p^{\top}\mathbf B(\mathbf p,\mathbf u,\mathbf z)\\
+\mathbf A(\mathbf p,\mathbf u,\mathbf z)\mathbf z
+&amp;\leq
+\rho\mathbf B(\mathbf p,\mathbf u,\mathbf z)\mathbf z
+\end{aligned}
+\]</span></p>
+<p>where <span class="math inline">\(\mathbf A(\mathbf p,\mathbf u,\mathbf z)\)</span> and <span class="math inline">\(\mathbf B(\mathbf p,\mathbf u,\mathbf z)\)</span> are the unit demand matrix and unit supply matrix, respectively, and <span class="math inline">\(\mathbf u\)</span> is the vector of consumers’ utility levels. Each row of the two matrices corresponds to a commodity, and each column corresponds to an economic agent. The price vector remains on the left-hand side of the system and is associated with the unit revenue-expenditure balance conditions, whereas the activity-level vector remains on the right-hand side and is associated with the supply-demand balance conditions (i.e., market-clearing conditions). The structural equilibrium model therefore remains an eigensystem. The activity-level vector in a strict-sense structural equilibrium model typically consists of producers’ activity levels and the numbers of consumers of different types.</p>
+<p>For notational simplicity, when <span class="math inline">\(\rho\neq1\)</span> in a structural equilibrium model, <span class="math inline">\(\rho\)</span> can be incorporated into <span class="math inline">\(\mathbf B(\cdot)\)</span>. In this case, <span class="math inline">\(\mathbf B(\cdot)\)</span> becomes the discount-adjusted unit supply matrix, and the structural equilibrium model can be written as</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathbf p^{\top}\mathbf A(\cdot)
+&amp;\geq
+\mathbf p^{\top}\mathbf B(\cdot)\\
+\mathbf A(\cdot)\mathbf z
+&amp;\leq
+\mathbf B(\cdot)\mathbf z
+\end{aligned}
+\]</span></p>
+<p>Let <span class="math inline">\(\operatorname{Diag}(\mathbf z)\)</span> denote the diagonal matrix with <span class="math inline">\(\mathbf z\)</span> on its main diagonal. The demand and supply matrices generated by the unit demand and unit supply matrices are</p>
+<p><span class="math display">\[
+\mathbf D(\cdot)=\mathbf A(\cdot)\operatorname{Diag}(\mathbf z),
+\qquad
+\mathbf S(\cdot)=\mathbf B(\cdot)\operatorname{Diag}(\mathbf z)
+\]</span></p>
+<p>respectively. Thus, each column of <span class="math inline">\(\mathbf D(\cdot)\)</span> or <span class="math inline">\(\mathbf S(\cdot)\)</span> gives the demand or supply of the corresponding economic agent at its activity level. The structural equilibrium conditions imply <span class="math inline">\(\mathbf p^{\top}\mathbf D(\cdot)=\mathbf p^{\top}\mathbf S(\cdot)\)</span> and <span class="math inline">\(\mathbf D(\cdot)\mathbf 1\leq\mathbf S(\cdot)\mathbf 1\)</span>. This leads directly to the mixed-form wide-sense structural equilibrium model</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathbf p^{\top}\mathbf D(\cdot)
+&amp;=
+\mathbf p^{\top}\mathbf S(\cdot)\\
+\mathbf D(\cdot)\mathbf 1
+&amp;\leq
+\mathbf S(\cdot)\mathbf 1
+\end{aligned}
+\]</span></p>
+<p>The first condition represents total revenue-expenditure balance for each economic agent, while the second states that the demand for each commodity does not exceed its supply.</p>
+<p>If there are no commodities in excess supply at equilibrium, so that supply equals demand for every commodity, the supply-demand inequality becomes an equality. This gives the equality-form wide-sense structural equilibrium model</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathbf p^{\top}\mathbf D(\cdot)
+&amp;=
+\mathbf p^{\top}\mathbf S(\cdot)\\
+\mathbf D(\cdot)\mathbf 1
+&amp;=
+\mathbf S(\cdot)\mathbf 1
+\end{aligned}
+\]</span></p>
+<p>The first equation states that every economic agent satisfies total revenue-expenditure balance in the accounting sense, while the second states that supply equals demand for every commodity.</p>
+<p>Thus, the equality-form wide-sense structural equilibrium model has the form of an eigenvalue equation system, whereas the mixed-form wide-sense structural equilibrium model has the form of an eigenvalue inequality system.</p>
+</section>
+</section>
+<section id="complementarity-relations-in-the-von-neumann-equilibrium-model" class="level2" data-number="1.2">
+<h2 data-number="1.2" class="anchored" data-anchor-id="complementarity-relations-in-the-von-neumann-equilibrium-model"><span class="header-section-number">1.2</span> Complementarity Relations in the von Neumann Equilibrium Model</h2>
+<p>The von Neumann equilibrium model <a href="#eq-vonNeumannModel" class="quarto-xref">Equation&nbsp;<span>1.1</span></a> implies complementary slackness conditions (Kemeny, Morgenstern, and Thompson, 1956). Right-multiplying the first inequality by <span class="math inline">\(\mathbf z\)</span> and left-multiplying the second inequality by <span class="math inline">\(\mathbf p^{\top}\)</span> gives</p>
+<p><span class="math display">\[
+\mathbf p^{\top}\mathbf A\mathbf z
+=
+\rho\mathbf p^{\top}\mathbf B\mathbf z
+\]</span></p>
+<p>That is, the total input value equals the discounted total output value. The von Neumann equilibrium model therefore implies the following two sets of complementarity conditions:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathbf 0
+&amp;\leq
+\mathbf A^{\top}\mathbf p-\rho\mathbf B^{\top}\mathbf p
+\perp
+\mathbf z
+\geq
+\mathbf 0\\
+\mathbf 0
+&amp;\leq
+\rho\mathbf B\mathbf z-\mathbf A\mathbf z
+\perp
+\mathbf p
+\geq
+\mathbf 0
+\end{aligned}
+\]</span></p>
+<p>The first set describes the complementarity relation between production activity levels and unit-value losses. If the unit cost of an activity is strictly greater than its discounted unit revenue, that activity must be inactive. Conversely, if an activity operates at a positive activity level, its unit cost must equal its discounted unit revenue.</p>
+<p>The second set describes the complementarity relation between commodity prices and excess supply. If a commodity is in excess supply, its equilibrium price must be zero. Conversely, if the equilibrium price of a commodity is positive, its supply must equal its demand.</p>
+<p>The von Neumann equilibrium model therefore has two sets of complementarity relations. On the economic-agent side, each activity level is complementary to the corresponding unit value loss. On the commodity side, each commodity price is complementary to the corresponding excess supply.</p>
+</section>
+<section id="mixed-complementarity-problems-and-their-solution-in-julia" class="level2" data-number="1.3">
+<h2 data-number="1.3" class="anchored" data-anchor-id="mixed-complementarity-problems-and-their-solution-in-julia"><span class="header-section-number">1.3</span> Mixed Complementarity Problems and Their Solution in Julia</h2>
+<section id="mixed-complementarity-formulation-and-numerical-solution" class="level3" data-number="1.3.1">
+<h3 data-number="1.3.1" class="anchored" data-anchor-id="mixed-complementarity-formulation-and-numerical-solution"><span class="header-section-number">1.3.1</span> Mixed Complementarity Formulation and Numerical Solution</h3>
+<p>A mixed complementarity problem is defined by a mapping <span class="math inline">\(\mathbf F\)</span> and lower and upper bounds on the variable vector <span class="math inline">\(\mathbf x\)</span>.</p>
+<p>Given a function</p>
+<p><span class="math display">\[
+\mathbf F:\mathbb R^N\rightarrow\mathbb R^N
+\]</span></p>
+<p>and lower and upper bounds <span class="math inline">\(\mathbf l\)</span> and <span class="math inline">\(\mathbf u\)</span> for the variable vector <span class="math inline">\(\mathbf x\)</span>, a mixed complementarity problem seeks a vector <span class="math inline">\(\mathbf x\)</span> satisfying <span class="math inline">\(\mathbf l\leq\mathbf x\leq\mathbf u\)</span> such that, for each <span class="math inline">\(i=1,\ldots,N\)</span>,</p>
+<p><span class="math display">\[
+\begin{cases}
+F_i(\mathbf x)\geq0, &amp; x_i=l_i\\
+F_i(\mathbf x)=0, &amp; l_i&lt;x_i&lt;u_i\\
+F_i(\mathbf x)\leq0, &amp; x_i=u_i
+\end{cases}
+\]</span></p>
+<p>These conditions can be written compactly in vector form as <span class="math display">\[
+\mathbf F(\mathbf x)\perp\mathbf l\leq\mathbf x\leq\mathbf u
+\]</span></p>
+<p>When <span class="math inline">\(l_i=0\)</span> and <span class="math inline">\(u_i=+\infty\)</span>, this reduces to the usual nonnegative complementarity condition</p>
+<p><span class="math display">\[
+0\leq F_i(\mathbf x)\perp x_i\geq0
+\]</span></p>
+<p>When <span class="math inline">\(l_i=-\infty\)</span> and <span class="math inline">\(u_i=+\infty\)</span>, <span class="math inline">\(x_i\)</span> is a free variable, and the corresponding complementarity condition reduces to the equation</p>
+<p><span class="math display">\[
+F_i(\mathbf x)=0
+\]</span></p>
+<p>A mixed complementarity problem can therefore represent, within a single model, nonnegative variables, variables with lower and upper bounds, free variables, equations, and complementarity conditions.</p>
+<p>Complementarity problems have a standardized mathematical form and can be solved directly using specialized solvers such as PATH. They are therefore particularly suitable as the computational representation of general equilibrium models (Ferris and Munson, 2000). From an economic perspective, however, complementarity formulations are often less intuitive because economic relationships are decomposed into variables, residual functions, and their associated complementarity conditions.</p>
+<p>By contrast, a structural equilibrium model represents the basic structure of an economic system directly in terms of demand matrices, supply matrices, revenue-expenditure balance conditions, and supply-demand balance conditions. This representation makes the economic relationships relatively transparent and facilitates theoretical analysis and the derivation of analytical solutions. A useful modeling strategy is therefore to construct and analyze an economic model first as a structural equilibrium model and then transform it into a complementarity problem for numerical solution.</p>
+<p>In Julia, mixed complementarity models can be constructed with <code>JuMP</code> and solved using the PATH solver through <code>PATHSolver.jl</code>.</p>
+<p>Because a general equilibrium model typically determines only relative prices, one commodity must normally be selected as the numeraire before solving the model with PATH, or an explicit price-normalization condition must be imposed. By Walras’ law, one market-clearing condition is typically redundant. Thus, when the price of a commodity is fixed as the numeraire, the corresponding redundant market-clearing condition normally needs to be removed or replaced. In models with multiple equilibria, the particular equilibrium found by PATH may depend on the initial values. After solving the model, it is therefore advisable to check complementarity residuals, market-clearing errors, revenue-expenditure balance errors, and the solver termination status.</p>
+</section>
+<section id="general-equilibrium-modeling-frameworks" class="level3" data-number="1.3.2">
+<h3 data-number="1.3.2" class="anchored" data-anchor-id="general-equilibrium-modeling-frameworks"><span class="header-section-number">1.3.2</span> General Equilibrium Modeling Frameworks</h3>
+<p><code>GeneralEquilibriumModeling.jl</code> is a Julia package for constructing and solving general equilibrium models. It emphasizes the correspondence between economic-theoretical models and their numerical solution forms. In the GEMB high-level framework, a model is specified in terms of commodities, economic agents, activity levels, revenue-expenditure balance conditions, and supply-demand balance conditions. In the GEMB low-level framework, these conditions are represented more directly at the computational level. The resulting equilibrium system is transformed into a mixed complementarity problem, represented numerically through <code>JuMP</code>, and solved with PATH through <code>PATHSolver.jl</code>.</p>
+<p><code>GeneralEquilibriumModeling.jl</code> provides three modeling frameworks.</p>
+<ol type="1">
+<li><p>The <code>GEM</code> framework is the lowest-level core representation and solution framework for general equilibrium models. Users can directly define economic agents’ net supply functions, endogenous variables, and associated complementarity conditions, and may also introduce auxiliary variables and auxiliary equations. <code>GEM</code> constructs the resulting mixed complementarity problem through <code>JuMP</code> and solves it using <code>PATHSolver.jl</code>.</p></li>
+<li><p>The <code>GEMB</code> low-level framework uses interfaces such as <code>CESSpec</code>, <code>ActivityDemandSpec</code>, and <code>build_agent</code> to transform specifications of production, consumption, and other economic behavior into <code>GEM.NetSupplyAgent</code> objects.</p></li>
+<li><p>The <code>GEMB</code> high-level framework organizes commodities and economic agents through <code>GEMBModel</code>, commodity names or <code>CommodityRef</code>, and interfaces such as <code>add_agent!</code>. Users therefore normally do not need to work directly with commodity indices, net supply functions, or low-level complementarity conditions.</p></li>
+</ol>
+<p>Models constructed at all three levels are ultimately transformed into <code>GEM</code> equilibrium models and solved through a common numerical solution interface.</p>
+<p><code>GeneralEquilibriumModeling.jl</code>, <code>MPSGE.jl</code>, and <code>JCGE.jl</code> can all be used to construct and solve general equilibrium models, but their primary orientations differ. <code>GeneralEquilibriumModeling.jl</code> takes economic agents, net supply relations, and equilibrium conditions as its basic modeling objects. It emphasizes the direct correspondence between economic theory and numerical models and is intended primarily for learning and teaching general equilibrium theory, while also supporting research on structural equilibrium models and nonstandard equilibrium mechanisms.</p>
+<p><code>MPSGE.jl</code> is oriented primarily toward CGE modeling. It emphasizes concise representations of calibrated economic structures through production sectors, commodities, consumers, and nested production and utility functions. <code>JCGE.jl</code>, by contrast, places greater emphasis on the complete workflow of applied CGE modeling, using modular blocks and standardized run specifications to support model assembly, data calibration, scenario simulation, validation, and comparison of results.</p>
+<p>The <code>GE</code> package for R solves general equilibrium models more directly on the basis of structural equilibrium models and structural dynamic models. It simulates the period-by-period adjustment of prices, activity levels, and resource allocation, allowing the economic system to approach an equilibrium state gradually. Compared with solving a mixed complementarity problem directly with PATH, this iterative approach is generally less computationally efficient, but it makes the dynamic process through which an economy moves from disequilibrium toward equilibrium observable. It can therefore be useful for studying the mechanism through which equilibrium is formed.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./index.html" class="pagination-link" aria-label="Preface">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Preface</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./Ch2GEM.html" class="pagination-link" aria-label="The GEMB High-Level Framework, the GEMB Low-Level Framework, and the GEM Framework">
+        <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">The GEMB High-Level Framework, the GEMB Low-Level Framework, and the GEM Framework</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

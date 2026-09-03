@@ -1,0 +1,1799 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.57">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>4&nbsp; Static Equilibrium with Production: Basic Models – GeneralEquilibriumModeling.jl and Structural Equilibrium Models</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./Ch5ProdExtended.html" rel="next">
+<link href="./Ch3PureExch.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Ch4ProdBasic.html"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Static Equilibrium with Production: Basic Models</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">GeneralEquilibriumModeling.jl and Structural Equilibrium Models</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Ch1SEM.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">The von Neumann Equilibrium Model and Structural Equilibrium Models</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Ch2GEM.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">The GEMB High-Level Framework, the GEMB Low-Level Framework, and the GEM Framework</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Ch3PureExch.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Static Pure-Exchange Equilibrium</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Ch4ProdBasic.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Static Equilibrium with Production: Basic Models</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Ch5ProdExtended.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Static Equilibrium with Production: Extended Models</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Ch6Intertemporal.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Intertemporal Equilibrium</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#production-and-transformation-specifications" id="toc-production-and-transformation-specifications" class="nav-link active" data-scroll-target="#production-and-transformation-specifications"><span class="header-section-number">4.1</span> Production and Transformation Specifications</a>
+  <ul class="collapse">
+  <li><a href="#production-function-specification" id="toc-production-function-specification" class="nav-link" data-scroll-target="#production-function-specification"><span class="header-section-number">4.1.1</span> Production-Function Specification</a></li>
+  <li><a href="#power-production-specification" id="toc-power-production-specification" class="nav-link" data-scroll-target="#power-production-specification"><span class="header-section-number">4.1.2</span> Power-Production Specification</a></li>
+  <li><a href="#cet-transformation-specification" id="toc-cet-transformation-specification" class="nav-link" data-scroll-target="#cet-transformation-specification"><span class="header-section-number">4.1.3</span> CET Transformation Specification</a></li>
+  </ul></li>
+  <li><a href="#equivalent-representations-using-auxiliary-commodities-and-virtual-producers" id="toc-equivalent-representations-using-auxiliary-commodities-and-virtual-producers" class="nav-link" data-scroll-target="#equivalent-representations-using-auxiliary-commodities-and-virtual-producers"><span class="header-section-number">4.2</span> Equivalent Representations Using Auxiliary Commodities and Virtual Producers</a></li>
+  <li><a href="#ces-cet-production-a-4times2-model" id="toc-ces-cet-production-a-4times2-model" class="nav-link" data-scroll-target="#ces-cet-production-a-4times2-model"><span class="header-section-number">4.3</span> CES-CET Production: A <span class="math inline">\(4\times2\)</span> Model</a></li>
+  <li><a href="#ad-valorem-tax-and-ad-valorem-claim-a-3times2-model" id="toc-ad-valorem-tax-and-ad-valorem-claim-a-3times2-model" class="nav-link" data-scroll-target="#ad-valorem-tax-and-ad-valorem-claim-a-3times2-model"><span class="header-section-number">4.4</span> Ad Valorem Tax and Ad Valorem Claim: A <span class="math inline">\(3\times2\)</span> Model</a>
+  <ul class="collapse">
+  <li><a href="#ad-valorem-claim" id="toc-ad-valorem-claim" class="nav-link" data-scroll-target="#ad-valorem-claim"><span class="header-section-number">4.4.1</span> Ad Valorem Claim</a></li>
+  <li><a href="#a-3times2-model-with-ad-valorem-tax" id="toc-a-3times2-model-with-ad-valorem-tax" class="nav-link" data-scroll-target="#a-3times2-model-with-ad-valorem-tax"><span class="header-section-number">4.4.2</span> A <span class="math inline">\(3\times2\)</span> Model with Ad Valorem Tax</a></li>
+  </ul></li>
+  <li><a href="#specific-tax-a-3times2-model" id="toc-specific-tax-a-3times2-model" class="nav-link" data-scroll-target="#specific-tax-a-3times2-model"><span class="header-section-number">4.5</span> Specific Tax: A <span class="math inline">\(3\times2\)</span> Model</a></li>
+  <li><a href="#non-rival-service-and-lindahl-prices-a-3times3-model" id="toc-non-rival-service-and-lindahl-prices-a-3times3-model" class="nav-link" data-scroll-target="#non-rival-service-and-lindahl-prices-a-3times3-model"><span class="header-section-number">4.6</span> Non-rival Service and Lindahl Prices: A <span class="math inline">\(3\times3\)</span> Model</a></li>
+  <li><a href="#capital-rental-and-equity-a-4times3-model" id="toc-capital-rental-and-equity-a-4times3-model" class="nav-link" data-scroll-target="#capital-rental-and-equity-a-4times3-model"><span class="header-section-number">4.7</span> Capital Rental and Equity: A <span class="math inline">\(4\times3\)</span> Model</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Static Equilibrium with Production: Basic Models</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="production-and-transformation-specifications" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="production-and-transformation-specifications"><span class="header-section-number">4.1</span> Production and Transformation Specifications</h2>
+<p>GEMB provides several specifications for describing production technologies and the transformation of an activity level into outputs. These specifications can be divided into two broad classes. A production specification describes the relationship between production activity and inputs, whereas a transformation specification describes the relationship between activity level and outputs.</p>
+<!-- liwu1 -->
+<section id="production-function-specification" class="level3" data-number="4.1.1">
+<h3 data-number="4.1.1" class="anchored" data-anchor-id="production-function-specification"><span class="header-section-number">4.1.1</span> Production-Function Specification</h3>
+<p><code>ProductionFunctionSpec</code> can be used when the production function and its marginal products are known explicitly. Let the production function be</p>
+<p><span class="math display">\[
+y=f(\mathbf x)
+\]</span></p>
+<p>where <span class="math inline">\(\mathbf x=(x_1,\ldots,x_n)^\top\)</span> is the input vector. The user supplies both <span class="math inline">\(f(\mathbf x)\)</span> and a marginal-product vector. The latter may be either the exact gradient</p>
+<p><span class="math display">\[
+\nabla f(\mathbf x)
+=
+\left(
+\frac{\partial f}{\partial x_1},
+\ldots,
+\frac{\partial f}{\partial x_n}
+\right)^\top
+\]</span></p>
+<p>or this vector multiplied by a common strictly positive factor, since such a scaling does not change the production stationarity conditions.</p>
+<p>For example, consider the Cobb–Douglas production function</p>
+<p><span class="math display">\[
+f(\mathbf x)=x_1^{0.6}x_2^{0.4}
+\]</span></p>
+<p>Its marginal-product vector can be multiplied by the common positive factor <span class="math inline">\(x_1^{0.4}x_2^{0.6}\)</span>, giving the simpler proportional vector <span class="math inline">\((0.6x_2,0.4x_1)^\top\)</span>. The specification can therefore be written as</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>production_function <span class="op">=</span> x <span class="op">-&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    x[<span class="fl">1</span>]<span class="op">^</span><span class="fl">0.6</span> <span class="op">*</span> x[<span class="fl">2</span>]<span class="op">^</span><span class="fl">0.4</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>marginal_product_function <span class="op">=</span> x <span class="op">-&gt;</span> [</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="fl">0.6</span> <span class="op">*</span> x[<span class="fl">2</span>],</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="fl">0.4</span> <span class="op">*</span> x[<span class="fl">1</span>],</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>spec <span class="op">=</span> GEMB.<span class="fu">ProductionFunctionSpec</span>(</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    production_function,</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    marginal_product_function;</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    behavior<span class="op">=:</span>stationary,</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The keyword <code>behavior</code> determines how the production technology is incorporated into the equilibrium system. With <code>behavior=:stationary</code>, GEMB constructs production stationarity conditions. The current stationary formulation assumes an interior solution, so the marginal-pricing conditions are imposed as equalities. With <code>behavior=:cost_min</code>, GEMB instead constructs cost-minimization KKT conditions, which allow corner solutions. Thus, the production function describes the technology, while <code>behavior</code> specifies the conditions imposed on the producer.</p>
+<p>Commodity mappings are not contained in <code>ProductionFunctionSpec</code>. They are supplied when the producer is added to the model. For example,</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>GEMB.<span class="fu">add_agent!</span>(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    model,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    spec;</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    outputs<span class="op">=:</span>product,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    demands<span class="op">=</span>[<span class="op">:</span>labor, <span class="op">:</span>capital],</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    activity_start<span class="op">=</span><span class="fl">100.0</span>,</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    demand_start<span class="op">=</span>[<span class="fl">100.0</span>, <span class="fl">100.0</span>],</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=:</span>firm,</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The resulting producer contains an activity level, endogenous input quantities, and a production multiplier.</p>
+</section>
+<section id="power-production-specification" class="level3" data-number="4.1.2">
+<h3 data-number="4.1.2" class="anchored" data-anchor-id="power-production-specification"><span class="header-section-number">4.1.2</span> Power-Production Specification</h3>
+<p>For the commonly used one-input power production function</p>
+<p><span class="math display">\[
+y=\alpha x^\theta,
+\qquad
+\alpha&gt;0,\quad\theta&gt;0
+\]</span></p>
+<p>GEMB provides the simpler built-in <code>PowerProductionSpec</code>:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>GEMB.<span class="fu">PowerProductionSpec</span>(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    alpha<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    theta<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>If the production activity is <span class="math inline">\(y\)</span>, the required input is obtained directly from the inverse production function,</p>
+<p><span class="math display">\[
+x
+=
+\left(
+\frac{y}{\alpha}
+\right)^{1/\theta}
+\]</span></p>
+<p>Thus, unlike <code>ProductionFunctionSpec</code>, <code>PowerProductionSpec</code> does not introduce the input quantity through a separate production-function constraint and marginal-product conditions. Instead, the input demand is computed directly as a function of the activity level. It is therefore an activity-demand specification and requires exactly one input commodity.</p>
+<p>A producer can, for example, be constructed by</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>GEMB.<span class="fu">add_agent!</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    model,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    GEMB.<span class="fu">PowerProductionSpec</span>(</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>        alpha<span class="op">=</span><span class="fl">2.0</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>        theta<span class="op">=</span><span class="fl">0.5</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    );</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    outputs<span class="op">=:</span>product,</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    demands<span class="op">=:</span>labor,</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    activity_start<span class="op">=</span><span class="fl">100.0</span>,</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=:</span>firm,</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>By default, a producer based on <code>PowerProductionSpec</code> uses <code>TotalRevenueExpenditureBalanceConditions</code>. Hence the default specification imposes total revenue-expenditure balance at a positive activity level. When <span class="math inline">\(\theta\ne1\)</span>, this condition should not be confused with marginal-cost pricing or the first-order condition of unconstrained profit maximization. Alternative producer conditions may be supplied explicitly when required by the economic model.</p>
+<p><code>ProductionFunctionSpec</code> and <code>PowerProductionSpec</code> therefore provide two different ways to represent production. The former explicitly introduces input quantities and production first-order conditions, whereas the latter substitutes the inverse production function directly into the producer’s conditional demand.</p>
+</section>
+<section id="cet-transformation-specification" class="level3" data-number="4.1.3">
+<h3 data-number="4.1.3" class="anchored" data-anchor-id="cet-transformation-specification"><span class="header-section-number">4.1.3</span> CET Transformation Specification</h3>
+<p>When one production activity generates several possible outputs, their proportions need not be fixed. GEMB provides <code>CETSpec</code> for a constant-elasticity-of-transformation (CET) output specification:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>GEMB.<span class="fu">CETSpec</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    beta;</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    et<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    alpha<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Let <span class="math inline">\(\boldsymbol{\beta}=(\beta_1,\ldots,\beta_m)^\top\)</span> denote the output weights, <span class="math inline">\(\eta\geq0\)</span> denote the elasticity of transformation corresponding to <code>et</code>, and <span class="math inline">\(\alpha&gt;0\)</span> denote the scale parameter. For an output-price vector <span class="math inline">\(\mathbf p=(p_1,\ldots,p_m)^\top\)</span>, GEMB uses the unit-revenue function</p>
+<p><span class="math display">\[
+r(\mathbf p)
+=
+\frac{1}{\alpha}
+\left(
+\sum_{i=1}^m
+\beta_i p_i^{1+\eta}
+\right)^{1/(1+\eta)}
+\]</span></p>
+<p>If the activity level is <span class="math inline">\(z\)</span>, the conditional supply of output <span class="math inline">\(i\)</span> is</p>
+<p><span class="math display">\[
+y_i
+=
+\frac{z}{\alpha}
+\beta_i p_i^\eta
+\left(
+\sum_{j=1}^m
+\beta_jp_j^{1+\eta}
+\right)^{-\eta/(1+\eta)}
+\]</span></p>
+<p>Hence, for two outputs with positive quantities and prices,</p>
+<p><span class="math display">\[
+\frac{y_i}{y_j}
+=
+\frac{\beta_i}{\beta_j}
+\left(
+\frac{p_i}{p_j}
+\right)^\eta
+\]</span></p>
+<p>so <code>et</code> directly measures the elasticity of the output ratio with respect to the relative output price. A larger <code>et</code> therefore makes the output composition more responsive to relative prices. When <code>et=0</code>, the output proportions are fixed:</p>
+<p><span class="math display">\[
+y_i
+=
+\frac{\beta_i}{\alpha}z
+\]</span></p>
+<p><code>CETSpec</code> is an output-side specification and is supplied through the <code>output_spec</code> argument of an activity-demand producer. For example, a producer may use a CES specification for its conditional input demands and a CET specification for its conditional output supplies:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>GEMB.<span class="fu">add_agent!</span>(</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    model,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    GEMB.<span class="fu">CESSpec</span>(</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>        [<span class="fl">0.6</span>, <span class="fl">0.4</span>];</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>        es<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        alpha<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    );</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    outputs<span class="op">=</span>[<span class="op">:</span>product1, <span class="op">:</span>product2],</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    output_spec<span class="op">=</span>GEMB.<span class="fu">CETSpec</span>(</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        [<span class="fl">0.5</span>, <span class="fl">0.5</span>];</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>        et<span class="op">=</span><span class="fl">2.0</span>,</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>        alpha<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    demands<span class="op">=</span>[<span class="op">:</span>labor, <span class="op">:</span>land],</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    activity_start<span class="op">=</span><span class="fl">100.0</span>,</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=:</span>firm,</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>In this construction, the CES specification determines the inputs required for a given activity level, while the CET specification determines how that activity is transformed into the two outputs. If no <code>output_spec</code> is supplied, output quantities are instead proportional to the activity level through fixed output coefficients. Consequently, <code>output_spec</code> and fixed <code>output_coefficients</code> represent alternative ways of describing the output side and are not used simultaneously.</p>
+<p>This separation between input and output specifications is particularly useful for joint production. The input side determines the resources required to support an activity level, while the output side determines the composition of the commodities supplied by that activity. The same activity variable therefore links production and transformation within a single economic agent.</p>
+<!-- liwu1 -->
+</section>
+</section>
+<section id="equivalent-representations-using-auxiliary-commodities-and-virtual-producers" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="equivalent-representations-using-auxiliary-commodities-and-virtual-producers"><span class="header-section-number">4.2</span> Equivalent Representations Using Auxiliary Commodities and Virtual Producers</h2>
+<p>In addition to representing an economic structure directly through the specifications described above, GEMB models can sometimes be constructed more conveniently by introducing auxiliary commodities, additional factors, or virtual producers. Such transformations enlarge the formal representation of the model while preserving the underlying equilibrium relationships for the original commodities and economic agents.</p>
+<ol type="1">
+<li><p>A production function with nonconstant returns to scale can be represented as a constant-returns-to-scale technology by introducing an additional commodity with fixed aggregate supply. We refer to this commodity as a scale claim. This well-known <strong>degree-one homogenization</strong> method applies to decreasing, increasing, or variable returns to scale (see <a href="Ch5ProdExtended.html#sec-Homogenization" class="quarto-xref"><span>Section 5.4</span></a> for details). When the original production function exhibits decreasing returns to scale, the scale claim may also be interpreted as an entrepreneurial factor (McKenzie, 2002, p.&nbsp;216).</p></li>
+<li><p>Nested production or utility functions can be represented using virtual producers. Each nest is treated as a separate production activity whose output is an intermediate virtual commodity used by the next nest. In the case of consumer preferences, a consumer can equivalently be decomposed into a virtual utility producer and a utility consumer. The utility producer uses the consumer’s ordinary commodities as inputs and produces a virtual utility commodity according to the original utility function, while the utility consumer consumes only this utility commodity.</p></li>
+<li><p>Virtual producers can also be used to represent taxes imposed on only part of a producer’s inputs. Taxed inputs can be distinguished from their corresponding untaxed commodities by introducing virtual taxed-input commodities. Virtual producers convert the original commodities into the corresponding taxed-input commodities while incorporating the relevant tax payments. The actual producer then demands these taxed-input commodities instead of the corresponding original commodities, whereas untaxed inputs continue to enter the production activity directly.</p></li>
+</ol>
+<p>These constructions share a common modeling principle: auxiliary commodities, additional factors, or virtual producers are introduced to transform a nonstandard structure into an equivalent system of standard activities and market relationships.</p>
+</section>
+<section id="ces-cet-production-a-4times2-model" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="ces-cet-production-a-4times2-model"><span class="header-section-number">4.3</span> CES-CET Production: A <span class="math inline">\(4\times2\)</span> Model</h2>
+<p>Assume the following:</p>
+<ol type="1">
+<li><p>The economy contains four commodities and two economic agents, a firm and a consumer. Commodities 1 and 2 are products, while commodities 3 and 4 are labor and land, respectively. Commodity 1 is taken as the numeraire commodity.</p></li>
+<li><p>The firm uses labor and land to generate the activity level <span class="math inline">\(z\)</span> according to the production function <span class="math inline">\(z=x_3^{2/3}x_4^{1/3}\)</span>, where <span class="math inline">\(x_3\)</span> and <span class="math inline">\(x_4\)</span> denote labor and land inputs, respectively. The activity is transformed into the two products according to the CET transformation function <span class="math inline">\(y_1^2+2y_2^2=3z^2\)</span>.</p></li>
+<li><p>The consumer is endowed with <span class="math inline">\(\omega&gt;0\)</span> units of labor and <span class="math inline">\(\omega'&gt;0\)</span> units of land and consumes all four commodities. Its utility function is <span class="math inline">\(u=c_1^{1/6}c_2^{1/3}c_3^{1/3}c_4^{1/6}\)</span>, where <span class="math inline">\(c_i\)</span> denotes consumption of commodity <span class="math inline">\(i\)</span>.</p></li>
+</ol>
+<p>Let the price vector be <span class="math inline">\(\mathbf p=(1,p_2,p_3,p_4)^\top\)</span>. The firm’s conditional factor demand and product supply vectors are</p>
+<p><span class="math display">\[
+\mathbf x(\mathbf p,z)
+=
+z
+\left(
+\left(\frac{2p_4}{p_3}\right)^{1/3},
+\left(\frac{p_3}{2p_4}\right)^{2/3}
+\right)^\top
+\]</span></p>
+<p>and</p>
+<p><span class="math display">\[
+\mathbf y(\mathbf p,z)
+=
+\frac{3z}{\left(3+\frac32p_2^2\right)^{1/2}}
+\left(
+1,\frac12p_2
+\right)^\top
+\]</span></p>
+<p>The consumer’s income is <span class="math inline">\(w=\omega p_3+\omega'p_4\)</span>, and its demand vector is</p>
+<p><span class="math display">\[
+\mathbf c(\mathbf p)
+=
+w
+\left(
+\frac16,
+\frac{1}{3p_2},
+\frac{1}{3p_3},
+\frac{1}{6p_4}
+\right)^\top
+\]</span></p>
+<p>Hence the demand and supply matrices are</p>
+<p><span class="math display">\[
+\mathbf D(\mathbf p,z)
+=
+\begin{bmatrix}
+0&amp;c_1\\
+0&amp;c_2\\
+x_3&amp;c_3\\
+x_4&amp;c_4
+\end{bmatrix}
+\]</span></p>
+<p>and</p>
+<p><span class="math display">\[
+\mathbf S(\mathbf p,z)
+=
+\begin{bmatrix}
+y_1&amp;0\\
+y_2&amp;0\\
+0&amp;\omega\\
+0&amp;\omega'
+\end{bmatrix}
+\]</span></p>
+<p>Consider the following equality-form wide-sense structural equilibrium model:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathbf p^\top\mathbf D(\mathbf p,z)
+&amp;=\mathbf p^\top\mathbf S(\mathbf p,z)\\
+\mathbf D(\mathbf p,z)\mathbf1
+&amp;=\mathbf S(\mathbf p,z)\mathbf1
+\end{aligned}
+\]</span></p>
+<p>The equilibrium price vector and firm activity level are, respectively,</p>
+<p><span class="math display">\[
+\mathbf p^*
+=
+\left(
+1,\,
+2,\,
+2\left(\frac{\omega'}{\omega}\right)^{1/3},\,
+\left(\frac{\omega}{\omega'}\right)^{2/3}
+\right)^\top
+\]</span></p>
+<p>and</p>
+<p><span class="math display">\[
+z^*
+=
+\frac12\omega^{2/3}{\omega'}^{1/3}
+\]</span></p>
+<p>The equilibrium product supply vector, factor demand vector, and consumer demand vector are</p>
+<p><span class="math display">\[
+\mathbf y^*
+=
+z^*(1,1)^\top
+\]</span></p>
+<p><span class="math display">\[
+\mathbf x^*
+=
+\left(
+\frac{\omega}{2},
+\frac{\omega'}{2}
+\right)^\top
+\]</span></p>
+<p>and</p>
+<p><span class="math display">\[
+\mathbf c^*
+=
+\left(
+z^*,
+z^*,
+\frac{\omega}{2},
+\frac{\omega'}{2}
+\right)^\top
+\]</span></p>
+<p>Hence the equilibrium demand and supply matrices are</p>
+<p><span class="math display">\[
+\mathbf D^*
+=
+\begin{bmatrix}
+0&amp;z^*\\
+0&amp;z^*\\
+\frac{\omega}{2}&amp;\frac{\omega}{2}\\
+\frac{\omega'}{2}&amp;\frac{\omega'}{2}
+\end{bmatrix},
+\qquad
+\mathbf S^*
+=
+\begin{bmatrix}
+z^*&amp;0\\
+z^*&amp;0\\
+0&amp;\omega\\
+0&amp;\omega'
+\end{bmatrix}
+\]</span></p>
+<p>The consumer’s equilibrium utility level is</p>
+<p><span class="math display">\[
+u^*=z^*
+=
+\frac12\omega^{2/3}{\omega'}^{1/3}
+\]</span></p>
+<p>In particular, when <span class="math inline">\(\omega=\omega'=100\)</span>,</p>
+<p><span class="math display">\[
+\mathbf p^*=(1,2,2,1)^\top,\qquad
+z^*=50,\qquad
+u^*=50
+\]</span></p>
+<p>and</p>
+<p><span class="math display">\[
+\mathbf D^*
+=
+\begin{bmatrix}
+0&amp;50\\
+0&amp;50\\
+50&amp;50\\
+50&amp;50
+\end{bmatrix},
+\qquad
+\mathbf S^*
+=
+\begin{bmatrix}
+50&amp;0\\
+50&amp;0\\
+0&amp;100\\
+0&amp;100
+\end{bmatrix}
+\]</span></p>
+<div id="lst-gemb_CES_CET_jointProduction_nc4_na2" class="listing quarto-float quarto-figure quarto-figure-left anchored">
+<figure class="quarto-float quarto-float-lst figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-lst" id="lst-gemb_CES_CET_jointProduction_nc4_na2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Listing&nbsp;4.1: A <span class="math inline">\(4\times2\)</span> Equilibrium Model with CES Inputs and CET Outputs
+</figcaption>
+<div aria-describedby="lst-gemb_CES_CET_jointProduction_nc4_na2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="sourceCode" id="lst-gemb_CES_CET_jointProduction_nc4_na2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="lst-gemb_CES_CET_jointProduction_nc4_na2-1"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ================================================================</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-2"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># gemb_CES_CET_jointProduction_nc4_na2_v1.jl</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-3"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-3" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-4"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># CES-CET joint-production equilibrium:</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-5"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># one producer and one consumer who consumes all four commodities.</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-6"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-6" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-7"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Commodities:</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-8"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-8" aria-hidden="true" tabindex="-1"></a><span class="co">#   1. product1</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-9"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-9" aria-hidden="true" tabindex="-1"></a><span class="co">#   2. product2</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-10"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-10" aria-hidden="true" tabindex="-1"></a><span class="co">#   3. labor</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-11"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-11" aria-hidden="true" tabindex="-1"></a><span class="co">#   4. land</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-12"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-12" aria-hidden="true" tabindex="-1"></a><span class="co"># ================================================================</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-13"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-14"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-14" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GeneralEquilibriumModeling</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-15"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-16"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-17"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-17" aria-hidden="true" tabindex="-1"></a><span class="co"># ----------------------------------------------------------------</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-18"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-18" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Parameters</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-19"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-19" aria-hidden="true" tabindex="-1"></a><span class="co"># ----------------------------------------------------------------</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-20"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-21"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-21" aria-hidden="true" tabindex="-1"></a>omega_labor <span class="op">=</span> <span class="fl">100.0</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-22"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-22" aria-hidden="true" tabindex="-1"></a>omega_land <span class="op">=</span> <span class="fl">100.0</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-23"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-24"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Production:</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-25"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-25" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-26"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-26" aria-hidden="true" tabindex="-1"></a><span class="co">#   z = x_labor^(2/3) * x_land^(1/3)</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-27"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-27" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-28"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-28" aria-hidden="true" tabindex="-1"></a>input_spec <span class="op">=</span> GEMB.<span class="fu">CESSpec</span>(</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-29"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-29" aria-hidden="true" tabindex="-1"></a>    [<span class="fl">2</span> <span class="op">/</span> <span class="fl">3</span>, <span class="fl">1</span> <span class="op">/</span> <span class="fl">3</span>];</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-30"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-30" aria-hidden="true" tabindex="-1"></a>    es<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-31"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-31" aria-hidden="true" tabindex="-1"></a>    alpha<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-32"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-32" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-33"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-34"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-34" aria-hidden="true" tabindex="-1"></a><span class="co"># CET transformation:</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-35"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-35" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-36"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-36" aria-hidden="true" tabindex="-1"></a><span class="co">#   y1^2 + 2*y2^2 = 3*z^2</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-37"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-37" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-38"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-38" aria-hidden="true" tabindex="-1"></a>output_spec <span class="op">=</span> GEMB.<span class="fu">CETSpec</span>(</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-39"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-39" aria-hidden="true" tabindex="-1"></a>    [<span class="fl">2</span> <span class="op">/</span> <span class="fl">3</span>, <span class="fl">1</span> <span class="op">/</span> <span class="fl">3</span>];</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-40"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-40" aria-hidden="true" tabindex="-1"></a>    et<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-41"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-41" aria-hidden="true" tabindex="-1"></a>    alpha<span class="op">=</span><span class="fu">sqrt</span>(<span class="fl">2</span>) <span class="op">/</span> <span class="fl">3</span>,</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-42"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-42" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-43"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-44"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-44" aria-hidden="true" tabindex="-1"></a><span class="co"># Consumer utility:</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-45"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-45" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-46"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-46" aria-hidden="true" tabindex="-1"></a><span class="co">#   u = c1^(1/6) * c2^(1/3) * c3^(1/3) * c4^(1/6)</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-47"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-47" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-48"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-48" aria-hidden="true" tabindex="-1"></a>utility_spec <span class="op">=</span> GEMB.<span class="fu">CESSpec</span>(</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-49"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-49" aria-hidden="true" tabindex="-1"></a>    [<span class="fl">1</span> <span class="op">/</span> <span class="fl">6</span>, <span class="fl">1</span> <span class="op">/</span> <span class="fl">3</span>, <span class="fl">1</span> <span class="op">/</span> <span class="fl">3</span>, <span class="fl">1</span> <span class="op">/</span> <span class="fl">6</span>];</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-50"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-50" aria-hidden="true" tabindex="-1"></a>    es<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-51"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-51" aria-hidden="true" tabindex="-1"></a>    alpha<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-52"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-52" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-53"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-54"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-55"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-55" aria-hidden="true" tabindex="-1"></a><span class="co"># ----------------------------------------------------------------</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-56"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-56" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. High-level GEMB model</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-57"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-57" aria-hidden="true" tabindex="-1"></a><span class="co"># ----------------------------------------------------------------</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-58"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-59"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-59" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> GEMB.<span class="fu">GEMBModel</span>(</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-60"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-60" aria-hidden="true" tabindex="-1"></a>    [<span class="op">:</span>product1, <span class="op">:</span>product2, <span class="op">:</span>labor, <span class="op">:</span>land];</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-61"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-61" aria-hidden="true" tabindex="-1"></a>    numeraire<span class="op">=:</span>product1,</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-62"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-62" aria-hidden="true" tabindex="-1"></a>    numeraire_value<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-63"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-63" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-64"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-65"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-66"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-66" aria-hidden="true" tabindex="-1"></a><span class="co"># ----------------------------------------------------------------</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-67"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-67" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. Producer</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-68"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-68" aria-hidden="true" tabindex="-1"></a><span class="co"># ----------------------------------------------------------------</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-69"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-70"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-70" aria-hidden="true" tabindex="-1"></a>GEMB.<span class="fu">add_agent!</span>(</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-71"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-71" aria-hidden="true" tabindex="-1"></a>    model,</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-72"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-72" aria-hidden="true" tabindex="-1"></a>    input_spec;</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-73"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-73" aria-hidden="true" tabindex="-1"></a>    outputs<span class="op">=</span>[<span class="op">:</span>product1, <span class="op">:</span>product2],</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-74"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-74" aria-hidden="true" tabindex="-1"></a>    output_spec<span class="op">=</span>output_spec,</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-75"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-75" aria-hidden="true" tabindex="-1"></a>    demands<span class="op">=</span>[<span class="op">:</span>labor, <span class="op">:</span>land],</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-76"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-76" aria-hidden="true" tabindex="-1"></a>    activity_start<span class="op">=</span><span class="fl">100.0</span>,</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-77"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-77" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=:</span>firm,</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-78"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-78" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-79"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-79" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-80"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-80" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-81"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-81" aria-hidden="true" tabindex="-1"></a><span class="co"># ----------------------------------------------------------------</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-82"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-82" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. Consumer</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-83"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-83" aria-hidden="true" tabindex="-1"></a><span class="co"># ----------------------------------------------------------------</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-84"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-85"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-85" aria-hidden="true" tabindex="-1"></a>GEMB.<span class="fu">add_agent!</span>(</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-86"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-86" aria-hidden="true" tabindex="-1"></a>    model,</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-87"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-87" aria-hidden="true" tabindex="-1"></a>    utility_spec;</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-88"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-88" aria-hidden="true" tabindex="-1"></a>    demands<span class="op">=</span>[<span class="op">:</span>product1, <span class="op">:</span>product2, <span class="op">:</span>labor, <span class="op">:</span>land],</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-89"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-89" aria-hidden="true" tabindex="-1"></a>    endowments<span class="op">=</span>[<span class="op">:</span>labor, <span class="op">:</span>land],</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-90"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-90" aria-hidden="true" tabindex="-1"></a>    endowment_quantities<span class="op">=</span>[omega_labor, omega_land],</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-91"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-91" aria-hidden="true" tabindex="-1"></a>    activity_start<span class="op">=</span><span class="fl">100.0</span>,</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-92"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-92" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=:</span>consumer,</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-93"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-93" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-94"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-94" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-95"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-95" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-96"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-96" aria-hidden="true" tabindex="-1"></a><span class="co"># ----------------------------------------------------------------</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-97"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-97" aria-hidden="true" tabindex="-1"></a><span class="co"># 5. Solve</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-98"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-98" aria-hidden="true" tabindex="-1"></a><span class="co"># ----------------------------------------------------------------</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-99"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-100"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-100" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> GEMB.<span class="fu">solve</span>(</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-101"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-101" aria-hidden="true" tabindex="-1"></a>    model;</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-102"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-102" aria-hidden="true" tabindex="-1"></a>    p0<span class="op">=</span><span class="fu">ones</span>(<span class="fl">4</span>),</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-103"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-103" aria-hidden="true" tabindex="-1"></a>    residual_tol<span class="op">=</span><span class="fl">1.0e-10</span>,</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-104"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-104" aria-hidden="true" tabindex="-1"></a>    silent<span class="op">=</span><span class="cn">true</span>,</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-105"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-105" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-106"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-106" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-107"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-107" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-108"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-108" aria-hidden="true" tabindex="-1"></a><span class="co"># ----------------------------------------------------------------</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-109"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-109" aria-hidden="true" tabindex="-1"></a><span class="co"># 6. Results</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-110"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-110" aria-hidden="true" tabindex="-1"></a><span class="co"># ----------------------------------------------------------------</span></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-111"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-111" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-112"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-112" aria-hidden="true" tabindex="-1"></a>prices <span class="op">=</span> result.prices</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-113"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-113" aria-hidden="true" tabindex="-1"></a>firm_activity <span class="op">=</span> result.agent_variable_values[<span class="fl">1</span>][<span class="fl">1</span>]</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-114"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-114" aria-hidden="true" tabindex="-1"></a>consumer_utility <span class="op">=</span> result.agent_variable_values[<span class="fl">2</span>][<span class="fl">1</span>]</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-115"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-116"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-116" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Solved:            "</span>, result.solved)</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-117"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-117" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Prices:            "</span>, prices)</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-118"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-118" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Firm activity:     "</span>, firm_activity)</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-119"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-119" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Consumer utility:  "</span>, consumer_utility)</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-120"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-120" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Firm net supply:   "</span>, result.agent_net_supplies[<span class="fl">1</span>])</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-121"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-121" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Consumer net supply:"</span>, result.agent_net_supplies[<span class="fl">2</span>])</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-122"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-122" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"Total net supply:  "</span>, result.total_net_supply)</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-123"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-123" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-124"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-124" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>()</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-125"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-125" aria-hidden="true" tabindex="-1"></a>GEMB.<span class="fu">print_equilibrium_statistics</span>(</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-126"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-126" aria-hidden="true" tabindex="-1"></a>    model,</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-127"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-127" aria-hidden="true" tabindex="-1"></a>    result;</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-128"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-128" aria-hidden="true" tabindex="-1"></a>    display_tol<span class="op">=</span><span class="fl">1.0e-10</span>,</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-129"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-129" aria-hidden="true" tabindex="-1"></a>    sigdigits<span class="op">=</span><span class="fl">8</span>,</span>
+<span id="lst-gemb_CES_CET_jointProduction_nc4_na2-130"><a href="#lst-gemb_CES_CET_jointProduction_nc4_na2-130" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</figure>
+</div>
+</section>
+<section id="ad-valorem-tax-and-ad-valorem-claim-a-3times2-model" class="level2" data-number="4.4">
+<h2 data-number="4.4" class="anchored" data-anchor-id="ad-valorem-tax-and-ad-valorem-claim-a-3times2-model"><span class="header-section-number">4.4</span> Ad Valorem Tax and Ad Valorem Claim: A <span class="math inline">\(3\times2\)</span> Model</h2>
+<section id="ad-valorem-claim" class="level3" data-number="4.4.1">
+<h3 data-number="4.4.1" class="anchored" data-anchor-id="ad-valorem-claim"><span class="header-section-number">4.4.1</span> Ad Valorem Claim</h3>
+<p>An ad valorem tax is levied as a fixed proportion of the value of a transaction, output, input, or other economic base. More generally, this concept can be extended to an ad valorem claim, which represents a right to claim a fixed proportion of a specified economic value. This concept provides a unified way to represent a variety of value-based claims in equilibrium models.</p>
+<ol type="1">
+<li><p>Let <span class="math inline">\(V\)</span> denote the value base and <span class="math inline">\(\tau\)</span> the ad valorem claim rate. The value of the claim is <span class="math inline">\(\tau V\)</span>. If the claim commodity has price <span class="math inline">\(p_c\)</span> and quantity <span class="math inline">\(c\)</span>, then <span class="math inline">\(p_c c=\tau V\)</span>.</p></li>
+<li><p>A positive claim rate, <span class="math inline">\(\tau&gt;0\)</span>, can represent an ad valorem tax, fee, or other positive value claim, while a negative claim rate, <span class="math inline">\(\tau&lt;0\)</span>, can represent an ad valorem subsidy or other reverse claim. Money and equity in equilibrium models can also be interpreted as forms of ad valorem claims.</p></li>
+<li><p>By treating an ad valorem claim as a commodity and incorporating it into demand, supply, and revenue-expenditure balance, ad valorem taxes, subsidies, value-sharing arrangements, rent claims, money, equity, and related institutions can be represented within a unified wide-sense structural equilibrium framework.</p></li>
+<li><p>Under an appropriate claim-based representation, profit rates, markup rates, saving rates, interest rates, rates of return, and ad valorem tax or subsidy rates can all be interpreted as ad valorem claim rates. In particular, money may serve as a claim-bearing commodity, while saving may be represented as the purchase of claims proportional to consumption expenditure.</p></li>
+</ol>
+</section>
+<section id="a-3times2-model-with-ad-valorem-tax" class="level3" data-number="4.4.2">
+<h3 data-number="4.4.2" class="anchored" data-anchor-id="a-3times2-model-with-ad-valorem-tax"><span class="header-section-number">4.4.2</span> A <span class="math inline">\(3\times2\)</span> Model with Ad Valorem Tax</h3>
+<p>Assume the following:</p>
+<ol type="1">
+<li><p>The economy contains three commodities: a product, labor, and a tax certificate. There are two economic agents: a firm and a consumer. Labor is taken as the numeraire commodity.</p></li>
+<li><p>The firm produces and supplies the product according to the production function <span class="math inline">\(\alpha x_2\)</span>, where <span class="math inline">\(x_2\)</span> denotes labor input and <span class="math inline">\(\alpha&gt;0\)</span>.</p></li>
+<li><p>The consumer has a labor endowment of <span class="math inline">\(\omega\)</span> and the utility function <span class="math inline">\(x_1^\beta x_2^{1-\beta}\)</span>, where <span class="math inline">\(x_1\)</span> denotes the quantity of the product consumed and <span class="math inline">\(x_2\)</span> denotes the quantity of labor enjoyed by the consumer, or equivalently leisure, with <span class="math inline">\(0&lt;\beta&lt;1\)</span>.</p></li>
+<li><p>An ad valorem tax is imposed on the product, and the tax revenue is transferred to the consumer. The tax rate satisfies <span class="math inline">\(0&lt;\tau&lt;1\)</span>, so the firm pays a tax equal to the fraction <span class="math inline">\(\tau\)</span> of its product sales revenue <span class="math inline">\(p_1y\)</span>. The consumer is endowed with one unit of the tax certificate.</p></li>
+</ol>
+<p>Let <span class="math inline">\(\mathbf p:=(p_1,1,p_3)^\top\)</span>, let <span class="math inline">\(y\)</span> denote output, and let <span class="math inline">\(w\)</span> denote consumer income. The demand and supply matrices are</p>
+<p><span class="math display">\[
+\mathbf D(\mathbf p,w,y):=
+\begin{bmatrix}
+0 &amp; \frac{\beta w}{p_1}\\
+\frac{y}{\alpha} &amp; (1-\beta)w\\
+\frac{\tau p_1y}{p_3} &amp; 0
+\end{bmatrix}
+\]</span></p>
+<p>and</p>
+<p><span class="math display">\[
+\mathbf S(y):=
+\begin{bmatrix}
+y &amp; 0\\
+0 &amp; \omega\\
+0 &amp; 1
+\end{bmatrix}
+\]</span></p>
+<p>Solving the equality-form wide-sense structural equilibrium model gives</p>
+<p><span class="math display">\[
+\mathbf p^*
+=
+\left(
+\frac{1}{\alpha(1-\tau)},
+\,1,\,
+\frac{\beta\omega\tau}{1-\beta\tau}
+\right)^\top
+\]</span></p>
+<p><span class="math display">\[
+w^*
+=
+\frac{\omega}{1-\beta\tau}
+\]</span></p>
+<p>and</p>
+<p><span class="math display">\[
+y^*
+=
+\frac{\alpha\beta(1-\tau)\omega}{1-\beta\tau}
+\]</span></p>
+<p>The consumer’s equilibrium utility level is</p>
+<p><span class="math display">\[
+u^*
+=
+\frac{
+\omega(\alpha\beta)^\beta(1-\beta)^{1-\beta}(1-\tau)^\beta
+}{
+1-\beta\tau
+}
+\]</span></p>
+<p>For <span class="math inline">\(0&lt;\tau&lt;1\)</span>,</p>
+<p><span class="math display">\[
+\frac{\partial\ln u^*}{\partial\tau}
+=
+-\frac{\beta(1-\beta)\tau}
+{(1-\tau)(1-\beta\tau)}
+&lt;0
+\]</span></p>
+<p>Hence, the consumer’s equilibrium utility decreases as the ad valorem tax rate increases. The tax therefore generates a deadweight loss, or excess burden, in this example.</p>
+<p>For example, let <span class="math inline">\(\alpha=2\)</span>, <span class="math inline">\(\beta=1/2\)</span>, <span class="math inline">\(\omega=90\)</span>, and <span class="math inline">\(\tau=1/2\)</span>. The equilibrium is then particularly simple:</p>
+<p><span class="math display">\[
+\mathbf p^*=(1,1,30)^\top,\qquad
+w^*=120,\qquad
+y^*=60
+\]</span></p>
+<p>The consumer demands 60 units of the product and enjoys 60 units of labor, so the equilibrium utility level is <span class="math inline">\(u^*=60\)</span>. The corresponding demand and supply matrices are</p>
+<p><span class="math display">\[
+\mathbf D^*
+=
+\begin{bmatrix}
+0&amp;60\\
+30&amp;60\\
+1&amp;0
+\end{bmatrix},
+\qquad
+\mathbf S^*
+=
+\begin{bmatrix}
+60&amp;0\\
+0&amp;90\\
+0&amp;1
+\end{bmatrix}
+\]</span></p>
+<p>Thus, all commodity markets clear exactly, and the revenue-expenditure balance condition is satisfied for both the firm and the consumer.</p>
+<div id="lst-gemb_CD_adValoremTax_nc3_na2" class="listing quarto-float quarto-figure quarto-figure-left anchored">
+<figure class="quarto-float quarto-float-lst figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-lst" id="lst-gemb_CD_adValoremTax_nc3_na2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Listing&nbsp;4.2: A <span class="math inline">\(3\times2\)</span> Equilibrium Model with an Ad Valorem Product Tax
+</figcaption>
+<div aria-describedby="lst-gemb_CD_adValoremTax_nc3_na2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="sourceCode" id="lst-gemb_CD_adValoremTax_nc3_na2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="lst-gemb_CD_adValoremTax_nc3_na2-1"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GeneralEquilibriumModeling</span></span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-2"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-3"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-3" aria-hidden="true" tabindex="-1"></a>alpha <span class="op">=</span> <span class="fl">2.0</span></span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-4"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-4" aria-hidden="true" tabindex="-1"></a>beta <span class="op">=</span> <span class="fl">0.5</span></span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-5"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-5" aria-hidden="true" tabindex="-1"></a>omega <span class="op">=</span> <span class="fl">90.0</span></span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-6"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-6" aria-hidden="true" tabindex="-1"></a>tau <span class="op">=</span> <span class="fl">0.5</span></span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-7"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-8"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-8" aria-hidden="true" tabindex="-1"></a>claim_rate <span class="op">=</span> tau <span class="op">/</span> (<span class="fl">1.0</span> <span class="op">-</span> tau)</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-9"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-10"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-10" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> GEMB.<span class="fu">GEMBModel</span>(</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-11"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-11" aria-hidden="true" tabindex="-1"></a>    [<span class="op">:</span>product, <span class="op">:</span>labor, <span class="op">:</span>tax_certificate];</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-12"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-12" aria-hidden="true" tabindex="-1"></a>    numeraire<span class="op">=:</span>labor,</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-13"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-13" aria-hidden="true" tabindex="-1"></a>    numeraire_value<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-14"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-15"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-16"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-16" aria-hidden="true" tabindex="-1"></a>GEMB.<span class="fu">add_agent!</span>(</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-17"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-17" aria-hidden="true" tabindex="-1"></a>    model,</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-18"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-18" aria-hidden="true" tabindex="-1"></a>    GEMB.<span class="fu">CESSpec</span>(</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-19"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-19" aria-hidden="true" tabindex="-1"></a>        [<span class="fl">1.0</span>];</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-20"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-20" aria-hidden="true" tabindex="-1"></a>        alpha<span class="op">=</span>alpha,</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-21"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-21" aria-hidden="true" tabindex="-1"></a>    );</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-22"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-22" aria-hidden="true" tabindex="-1"></a>    outputs<span class="op">=:</span>product,</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-23"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-23" aria-hidden="true" tabindex="-1"></a>    demands<span class="op">=:</span>labor,</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-24"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-24" aria-hidden="true" tabindex="-1"></a>    claim_rate<span class="op">=</span>claim_rate,</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-25"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-25" aria-hidden="true" tabindex="-1"></a>    claim<span class="op">=</span>GEMB.<span class="fu">CommodityRef</span>(<span class="op">:</span>tax_certificate),</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-26"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-26" aria-hidden="true" tabindex="-1"></a>    activity_start<span class="op">=</span><span class="fl">100.0</span>,</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-27"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-27" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=:</span>firm,</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-28"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-28" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-29"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-30"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-30" aria-hidden="true" tabindex="-1"></a>GEMB.<span class="fu">add_agent!</span>(</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-31"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-31" aria-hidden="true" tabindex="-1"></a>    model,</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-32"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-32" aria-hidden="true" tabindex="-1"></a>    GEMB.<span class="fu">CESSpec</span>(</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-33"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-33" aria-hidden="true" tabindex="-1"></a>        [beta, <span class="fl">1.0</span> <span class="op">-</span> beta];</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-34"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-34" aria-hidden="true" tabindex="-1"></a>        es<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-35"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-35" aria-hidden="true" tabindex="-1"></a>        alpha<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-36"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-36" aria-hidden="true" tabindex="-1"></a>    );</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-37"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-37" aria-hidden="true" tabindex="-1"></a>    demands<span class="op">=</span>[<span class="op">:</span>product, <span class="op">:</span>labor],</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-38"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-38" aria-hidden="true" tabindex="-1"></a>    endowments<span class="op">=</span>[<span class="op">:</span>labor, <span class="op">:</span>tax_certificate],</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-39"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-39" aria-hidden="true" tabindex="-1"></a>    endowment_quantities<span class="op">=</span>[omega, <span class="fl">1.0</span>],</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-40"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-40" aria-hidden="true" tabindex="-1"></a>    activity_start<span class="op">=</span><span class="fl">100.0</span>,</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-41"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-41" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=:</span>consumer,</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-42"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-42" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-43"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-44"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-44" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> GEMB.<span class="fu">solve</span>(</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-45"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-45" aria-hidden="true" tabindex="-1"></a>    model;</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-46"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-46" aria-hidden="true" tabindex="-1"></a>    p0<span class="op">=</span>[<span class="fl">1.0</span>, <span class="fl">1.0</span>, <span class="fl">30.0</span>],</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-47"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-47" aria-hidden="true" tabindex="-1"></a>    residual_tol<span class="op">=</span><span class="fl">1.0e-8</span>,</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-48"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-48" aria-hidden="true" tabindex="-1"></a>    silent<span class="op">=</span><span class="cn">true</span>,</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-49"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-49" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-50"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-51"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-51" aria-hidden="true" tabindex="-1"></a>stats <span class="op">=</span> GEMB.<span class="fu">equilibrium_statistics</span>(model, result)</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-52"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-53"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-53" aria-hidden="true" tabindex="-1"></a>output <span class="op">=</span> stats.activity_levels[<span class="fl">1</span>]</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-54"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-54" aria-hidden="true" tabindex="-1"></a>utility <span class="op">=</span> stats.activity_levels[<span class="fl">2</span>]</span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-55"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_adValoremTax_nc3_na2-56"><a href="#lst-gemb_CD_adValoremTax_nc3_na2-56" aria-hidden="true" tabindex="-1"></a>GEMB.<span class="fu">print_equilibrium_statistics</span>(model, result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</figure>
+</div>
+</section>
+</section>
+<section id="specific-tax-a-3times2-model" class="level2" data-number="4.5">
+<h2 data-number="4.5" class="anchored" data-anchor-id="specific-tax-a-3times2-model"><span class="header-section-number">4.5</span> Specific Tax: A <span class="math inline">\(3\times2\)</span> Model</h2>
+<p>Consider the same economy as in the previous section, but replace the ad valorem tax with a specific tax on the product. Let <span class="math inline">\(\tau&gt;0\)</span> denote the tax per unit of output. The firm therefore pays <span class="math inline">\(\tau y\)</span> in taxes when producing <span class="math inline">\(y\)</span> units of the product, and the tax revenue is transferred to the consumer through the tax certificate.</p>
+<p>Let <span class="math inline">\(\mathbf p:=(p_1,1,p_3)^\top\)</span>, where labor is the numeraire commodity. The demand matrix becomes</p>
+<p><span class="math display">\[
+\mathbf D(\mathbf p,w,y)
+=
+\begin{bmatrix}
+0 &amp; \frac{\beta w}{p_1}\\
+\frac{y}{\alpha} &amp; (1-\beta)w\\
+\frac{\tau y}{p_3} &amp; 0
+\end{bmatrix}
+\]</span></p>
+<p>while the supply matrix remains</p>
+<p><span class="math display">\[
+\mathbf S(y)
+=
+\begin{bmatrix}
+y &amp; 0\\
+0 &amp; \omega\\
+0 &amp; 1
+\end{bmatrix}
+\]</span></p>
+<p>Solving the equality-form wide-sense structural equilibrium model gives</p>
+<p><span class="math display">\[
+\mathbf p^*
+=
+\left(
+\frac{1}{\alpha}+\tau,
+\,1,\,
+\frac{\alpha\beta\omega\tau}
+{1+\alpha\tau(1-\beta)}
+\right)^\top
+\]</span></p>
+<p><span class="math display">\[
+w^*
+=
+\frac{(1+\alpha\tau)\omega}
+{1+\alpha\tau(1-\beta)}
+\]</span></p>
+<p>and</p>
+<p><span class="math display">\[
+y^*
+=
+\frac{\alpha\beta\omega}
+{1+\alpha\tau(1-\beta)}
+\]</span></p>
+<p>The consumer’s equilibrium utility level is</p>
+<p><span class="math display">\[
+u^*
+=
+\frac{
+\omega(\alpha\beta)^\beta
+\big((1-\beta)(1+\alpha\tau)\big)^{1-\beta}
+}{
+1+\alpha(1-\beta)\tau
+}
+\]</span></p>
+<p>For example, let <span class="math inline">\(\alpha=2\)</span>, <span class="math inline">\(\beta=1/2\)</span>, <span class="math inline">\(\omega=90\)</span>, and <span class="math inline">\(\tau=1/2\)</span>. The equilibrium is</p>
+<p><span class="math display">\[
+\mathbf p^*=(1,1,30)^\top,\qquad
+w^*=120,\qquad
+y^*=60,\qquad
+u^*=60
+\]</span></p>
+<p>For these parameter values, the numerical equilibrium happens to coincide with that of the ad valorem tax example in the previous section, although the definitions of the two tax rates are different.</p>
+<div id="lst-gemb_CD_specificTax_nc3_na2" class="listing quarto-float quarto-figure quarto-figure-left anchored">
+<figure class="quarto-float quarto-float-lst figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-lst" id="lst-gemb_CD_specificTax_nc3_na2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Listing&nbsp;4.3: A <span class="math inline">\(3\times2\)</span> Equilibrium Model with a Specific Tax
+</figcaption>
+<div aria-describedby="lst-gemb_CD_specificTax_nc3_na2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="sourceCode" id="lst-gemb_CD_specificTax_nc3_na2"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="lst-gemb_CD_specificTax_nc3_na2-1"><a href="#lst-gemb_CD_specificTax_nc3_na2-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GeneralEquilibriumModeling</span></span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-2"><a href="#lst-gemb_CD_specificTax_nc3_na2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-3"><a href="#lst-gemb_CD_specificTax_nc3_na2-3" aria-hidden="true" tabindex="-1"></a>alpha <span class="op">=</span> <span class="fl">2.0</span></span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-4"><a href="#lst-gemb_CD_specificTax_nc3_na2-4" aria-hidden="true" tabindex="-1"></a>beta <span class="op">=</span> <span class="fl">0.5</span></span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-5"><a href="#lst-gemb_CD_specificTax_nc3_na2-5" aria-hidden="true" tabindex="-1"></a>omega <span class="op">=</span> <span class="fl">90.0</span></span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-6"><a href="#lst-gemb_CD_specificTax_nc3_na2-6" aria-hidden="true" tabindex="-1"></a>tau <span class="op">=</span> <span class="fl">0.5</span></span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-7"><a href="#lst-gemb_CD_specificTax_nc3_na2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-8"><a href="#lst-gemb_CD_specificTax_nc3_na2-8" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> GEMB.<span class="fu">GEMBModel</span>(</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-9"><a href="#lst-gemb_CD_specificTax_nc3_na2-9" aria-hidden="true" tabindex="-1"></a>    [<span class="op">:</span>product, <span class="op">:</span>labor, <span class="op">:</span>tax_certificate];</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-10"><a href="#lst-gemb_CD_specificTax_nc3_na2-10" aria-hidden="true" tabindex="-1"></a>    numeraire<span class="op">=:</span>labor,</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-11"><a href="#lst-gemb_CD_specificTax_nc3_na2-11" aria-hidden="true" tabindex="-1"></a>    numeraire_value<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-12"><a href="#lst-gemb_CD_specificTax_nc3_na2-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-13"><a href="#lst-gemb_CD_specificTax_nc3_na2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-14"><a href="#lst-gemb_CD_specificTax_nc3_na2-14" aria-hidden="true" tabindex="-1"></a>firm_spec <span class="op">=</span> GEMB.<span class="fu">ActivityDemandSpec</span>(</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-15"><a href="#lst-gemb_CD_specificTax_nc3_na2-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">function</span> (output, prices)</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-16"><a href="#lst-gemb_CD_specificTax_nc3_na2-16" aria-hidden="true" tabindex="-1"></a>        p_labor, p_tax <span class="op">=</span> prices</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-17"><a href="#lst-gemb_CD_specificTax_nc3_na2-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-18"><a href="#lst-gemb_CD_specificTax_nc3_na2-18" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> [</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-19"><a href="#lst-gemb_CD_specificTax_nc3_na2-19" aria-hidden="true" tabindex="-1"></a>            output <span class="op">/</span> alpha,</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-20"><a href="#lst-gemb_CD_specificTax_nc3_na2-20" aria-hidden="true" tabindex="-1"></a>            tau <span class="op">*</span> output <span class="op">/</span> p_tax,</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-21"><a href="#lst-gemb_CD_specificTax_nc3_na2-21" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-22"><a href="#lst-gemb_CD_specificTax_nc3_na2-22" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span>,</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-23"><a href="#lst-gemb_CD_specificTax_nc3_na2-23" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-24"><a href="#lst-gemb_CD_specificTax_nc3_na2-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-25"><a href="#lst-gemb_CD_specificTax_nc3_na2-25" aria-hidden="true" tabindex="-1"></a>GEMB.<span class="fu">add_agent!</span>(</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-26"><a href="#lst-gemb_CD_specificTax_nc3_na2-26" aria-hidden="true" tabindex="-1"></a>    model,</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-27"><a href="#lst-gemb_CD_specificTax_nc3_na2-27" aria-hidden="true" tabindex="-1"></a>    firm_spec;</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-28"><a href="#lst-gemb_CD_specificTax_nc3_na2-28" aria-hidden="true" tabindex="-1"></a>    outputs<span class="op">=:</span>product,</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-29"><a href="#lst-gemb_CD_specificTax_nc3_na2-29" aria-hidden="true" tabindex="-1"></a>    demands<span class="op">=</span>[<span class="op">:</span>labor, <span class="op">:</span>tax_certificate],</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-30"><a href="#lst-gemb_CD_specificTax_nc3_na2-30" aria-hidden="true" tabindex="-1"></a>    activity_start<span class="op">=</span><span class="fl">100.0</span>,</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-31"><a href="#lst-gemb_CD_specificTax_nc3_na2-31" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=:</span>firm,</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-32"><a href="#lst-gemb_CD_specificTax_nc3_na2-32" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-33"><a href="#lst-gemb_CD_specificTax_nc3_na2-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-34"><a href="#lst-gemb_CD_specificTax_nc3_na2-34" aria-hidden="true" tabindex="-1"></a>GEMB.<span class="fu">add_agent!</span>(</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-35"><a href="#lst-gemb_CD_specificTax_nc3_na2-35" aria-hidden="true" tabindex="-1"></a>    model,</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-36"><a href="#lst-gemb_CD_specificTax_nc3_na2-36" aria-hidden="true" tabindex="-1"></a>    GEMB.<span class="fu">CESSpec</span>(</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-37"><a href="#lst-gemb_CD_specificTax_nc3_na2-37" aria-hidden="true" tabindex="-1"></a>        [beta, <span class="fl">1.0</span> <span class="op">-</span> beta];</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-38"><a href="#lst-gemb_CD_specificTax_nc3_na2-38" aria-hidden="true" tabindex="-1"></a>        es<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-39"><a href="#lst-gemb_CD_specificTax_nc3_na2-39" aria-hidden="true" tabindex="-1"></a>        alpha<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-40"><a href="#lst-gemb_CD_specificTax_nc3_na2-40" aria-hidden="true" tabindex="-1"></a>    );</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-41"><a href="#lst-gemb_CD_specificTax_nc3_na2-41" aria-hidden="true" tabindex="-1"></a>    demands<span class="op">=</span>[<span class="op">:</span>product, <span class="op">:</span>labor],</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-42"><a href="#lst-gemb_CD_specificTax_nc3_na2-42" aria-hidden="true" tabindex="-1"></a>    endowments<span class="op">=</span>[<span class="op">:</span>labor, <span class="op">:</span>tax_certificate],</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-43"><a href="#lst-gemb_CD_specificTax_nc3_na2-43" aria-hidden="true" tabindex="-1"></a>    endowment_quantities<span class="op">=</span>[omega, <span class="fl">1.0</span>],</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-44"><a href="#lst-gemb_CD_specificTax_nc3_na2-44" aria-hidden="true" tabindex="-1"></a>    activity_start<span class="op">=</span><span class="fl">100.0</span>,</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-45"><a href="#lst-gemb_CD_specificTax_nc3_na2-45" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=:</span>consumer,</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-46"><a href="#lst-gemb_CD_specificTax_nc3_na2-46" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-47"><a href="#lst-gemb_CD_specificTax_nc3_na2-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-48"><a href="#lst-gemb_CD_specificTax_nc3_na2-48" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> GEMB.<span class="fu">solve</span>(</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-49"><a href="#lst-gemb_CD_specificTax_nc3_na2-49" aria-hidden="true" tabindex="-1"></a>    model;</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-50"><a href="#lst-gemb_CD_specificTax_nc3_na2-50" aria-hidden="true" tabindex="-1"></a>    p0<span class="op">=</span>[<span class="fl">1.0</span>, <span class="fl">1.0</span>, <span class="fl">30.0</span>],</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-51"><a href="#lst-gemb_CD_specificTax_nc3_na2-51" aria-hidden="true" tabindex="-1"></a>    residual_tol<span class="op">=</span><span class="fl">1.0e-8</span>,</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-52"><a href="#lst-gemb_CD_specificTax_nc3_na2-52" aria-hidden="true" tabindex="-1"></a>    silent<span class="op">=</span><span class="cn">true</span>,</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-53"><a href="#lst-gemb_CD_specificTax_nc3_na2-53" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-54"><a href="#lst-gemb_CD_specificTax_nc3_na2-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-55"><a href="#lst-gemb_CD_specificTax_nc3_na2-55" aria-hidden="true" tabindex="-1"></a>stats <span class="op">=</span> GEMB.<span class="fu">equilibrium_statistics</span>(model, result)</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-56"><a href="#lst-gemb_CD_specificTax_nc3_na2-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-57"><a href="#lst-gemb_CD_specificTax_nc3_na2-57" aria-hidden="true" tabindex="-1"></a>output <span class="op">=</span> stats.activity_levels[<span class="fl">1</span>]</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-58"><a href="#lst-gemb_CD_specificTax_nc3_na2-58" aria-hidden="true" tabindex="-1"></a>utility <span class="op">=</span> stats.activity_levels[<span class="fl">2</span>]</span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-59"><a href="#lst-gemb_CD_specificTax_nc3_na2-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_specificTax_nc3_na2-60"><a href="#lst-gemb_CD_specificTax_nc3_na2-60" aria-hidden="true" tabindex="-1"></a>GEMB.<span class="fu">print_equilibrium_statistics</span>(model, result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</figure>
+</div>
+</section>
+<section id="non-rival-service-and-lindahl-prices-a-3times3-model" class="level2" data-number="4.6">
+<h2 data-number="4.6" class="anchored" data-anchor-id="non-rival-service-and-lindahl-prices-a-3times3-model"><span class="header-section-number">4.6</span> Non-rival Service and Lindahl Prices: A <span class="math inline">\(3\times3\)</span> Model</h2>
+<p>Assume the following:</p>
+<ol type="1">
+<li><p>The economy contains three commodities: service 1, service 2, and labor. There are three economic agents: one firm and two consumers. Labor is taken as the numeraire commodity.</p></li>
+<li><p>The firm provides a non-rival service, such as residential security service. Each unit of labor input provides one unit of personalized service to each consumer. These personalized services are referred to as service 1 and service 2, respectively.</p></li>
+<li><p>Both consumers demand their personalized service and labor and have Cobb–Douglas utility functions. For consumer 1, the expenditure shares on service 1 and labor are <span class="math inline">\(\beta_1\)</span> and <span class="math inline">\(1-\beta_1\)</span>, respectively. For consumer 2, the corresponding shares on service 2 and labor are <span class="math inline">\(\beta_2\)</span> and <span class="math inline">\(1-\beta_2\)</span>.</p></li>
+<li><p>Consumers 1 and 2 are endowed with <span class="math inline">\(\omega_1&gt;0\)</span> and <span class="math inline">\(\omega_2&gt;0\)</span> units of labor, respectively.</p></li>
+</ol>
+<p>Let <span class="math inline">\(\mathbf p:=(p_1,p_2,1)^\top\)</span>, let <span class="math inline">\(y\)</span> denote the service level, and let the consumer-income vector be <span class="math inline">\(\mathbf w=(w_1,w_2)^\top\)</span>. The demand and supply matrices are</p>
+<p><span class="math display">\[
+\mathbf D(\mathbf p,\mathbf w,y)
+:=
+\begin{bmatrix}
+0 &amp; \frac{\beta_1w_1}{p_1} &amp; 0\\
+0 &amp; 0 &amp; \frac{\beta_2w_2}{p_2}\\
+y &amp; (1-\beta_1)w_1 &amp; (1-\beta_2)w_2
+\end{bmatrix}
+\]</span></p>
+<p>and</p>
+<p><span class="math display">\[
+\mathbf S(y)
+:=
+\begin{bmatrix}
+y &amp; 0 &amp; 0\\
+y &amp; 0 &amp; 0\\
+0 &amp; \omega_1 &amp; \omega_2
+\end{bmatrix}
+\]</span></p>
+<p>Solving the equality-form wide-sense structural equilibrium model gives</p>
+<p><span class="math display">\[
+\mathbf p^*
+=
+\left(
+\frac{\beta_1\omega_1}
+{\beta_1\omega_1+\beta_2\omega_2},
+\frac{\beta_2\omega_2}
+{\beta_1\omega_1+\beta_2\omega_2},
+1
+\right)^\top
+\]</span></p>
+<p><span class="math display">\[
+\mathbf w^*
+=
+(\omega_1,\omega_2)^\top
+\]</span></p>
+<p>and</p>
+<p><span class="math display">\[
+y^*
+=
+\beta_1\omega_1+\beta_2\omega_2
+\]</span></p>
+<p>The personalized equilibrium prices satisfy</p>
+<p><span class="math display">\[
+p_1^*+p_2^*=1
+\]</span></p>
+<p>so the sum of the two consumers’ personalized prices equals the marginal cost of providing the non-rival service. The prices <span class="math inline">\(p_1^*\)</span> and <span class="math inline">\(p_2^*\)</span> can therefore be interpreted as Lindahl prices: each consumer faces a personalized price for the same underlying non-rival service, while the sum of these prices covers its unit production cost.</p>
+<p>For example, let <span class="math inline">\(\beta_1=1/4\)</span>, <span class="math inline">\(\beta_2=2/3\)</span>, <span class="math inline">\(\omega_1=120\)</span>, and <span class="math inline">\(\omega_2=90\)</span>. The equilibrium is</p>
+<p><span class="math display">\[
+\mathbf p^*
+=
+\left(
+\frac13,\frac23,1
+\right)^\top,
+\qquad
+\mathbf w^*
+=
+(120,90)^\top,
+\qquad
+y^*=90
+\]</span></p>
+<p>Both consumers receive 90 units of the non-rival service. Consumer 1 enjoys 90 units of labor, whereas consumer 2 enjoys 30 units. The corresponding demand and supply matrices are</p>
+<p><span class="math display">\[
+\mathbf D^*
+=
+\begin{bmatrix}
+0&amp;90&amp;0\\
+0&amp;0&amp;90\\
+90&amp;90&amp;30
+\end{bmatrix},
+\qquad
+\mathbf S^*
+=
+\begin{bmatrix}
+90&amp;0&amp;0\\
+90&amp;0&amp;0\\
+0&amp;120&amp;90
+\end{bmatrix}
+\]</span></p>
+<p>The two personalized Lindahl prices are therefore <span class="math inline">\(1/3\)</span> and <span class="math inline">\(2/3\)</span>, reflecting the consumers’ different valuations of the non-rival service, while their sum remains equal to the unit cost of providing it.</p>
+<div id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3" class="listing quarto-float quarto-figure quarto-figure-left anchored">
+<figure class="quarto-float quarto-float-lst figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-lst" id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Listing&nbsp;4.4: A <span class="math inline">\(3\times3\)</span> Equilibrium Model with a Non-rival Service and Lindahl Prices
+</figcaption>
+<div aria-describedby="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="sourceCode" id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-1"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GeneralEquilibriumModeling</span></span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-2"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-3"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-3" aria-hidden="true" tabindex="-1"></a>beta1 <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">4</span></span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-4"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-4" aria-hidden="true" tabindex="-1"></a>beta2 <span class="op">=</span> <span class="fl">2</span> <span class="op">/</span> <span class="fl">3</span></span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-5"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-5" aria-hidden="true" tabindex="-1"></a>omega1 <span class="op">=</span> <span class="fl">120.0</span></span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-6"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-6" aria-hidden="true" tabindex="-1"></a>omega2 <span class="op">=</span> <span class="fl">90.0</span></span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-7"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-8"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-8" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> GEMB.<span class="fu">GEMBModel</span>(</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-9"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-9" aria-hidden="true" tabindex="-1"></a>    [<span class="op">:</span>service1, <span class="op">:</span>service2, <span class="op">:</span>labor];</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-10"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-10" aria-hidden="true" tabindex="-1"></a>    numeraire<span class="op">=:</span>labor,</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-11"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-11" aria-hidden="true" tabindex="-1"></a>    numeraire_value<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-12"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-13"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-14"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-14" aria-hidden="true" tabindex="-1"></a>GEMB.<span class="fu">add_agent!</span>(</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-15"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-15" aria-hidden="true" tabindex="-1"></a>    model,</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-16"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-16" aria-hidden="true" tabindex="-1"></a>    GEMB.<span class="fu">CESSpec</span>([<span class="fl">1.0</span>]);</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-17"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-17" aria-hidden="true" tabindex="-1"></a>    outputs<span class="op">=</span>[<span class="op">:</span>service1, <span class="op">:</span>service2],</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-18"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-18" aria-hidden="true" tabindex="-1"></a>    demands<span class="op">=:</span>labor,</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-19"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-19" aria-hidden="true" tabindex="-1"></a>    activity_start<span class="op">=</span><span class="fl">100.0</span>,</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-20"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-20" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=:</span>firm,</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-21"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-21" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-22"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-23"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-23" aria-hidden="true" tabindex="-1"></a>GEMB.<span class="fu">add_agent!</span>(</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-24"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-24" aria-hidden="true" tabindex="-1"></a>    model,</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-25"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-25" aria-hidden="true" tabindex="-1"></a>    GEMB.<span class="fu">CESSpec</span>([beta1, <span class="fl">1</span> <span class="op">-</span> beta1]);</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-26"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-26" aria-hidden="true" tabindex="-1"></a>    demands<span class="op">=</span>[<span class="op">:</span>service1, <span class="op">:</span>labor],</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-27"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-27" aria-hidden="true" tabindex="-1"></a>    endowments<span class="op">=:</span>labor,</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-28"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-28" aria-hidden="true" tabindex="-1"></a>    endowment_quantities<span class="op">=</span>omega1,</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-29"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-29" aria-hidden="true" tabindex="-1"></a>    activity_start<span class="op">=</span><span class="fl">100.0</span>,</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-30"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-30" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=:</span>consumer1,</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-31"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-31" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-32"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-33"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-33" aria-hidden="true" tabindex="-1"></a>GEMB.<span class="fu">add_agent!</span>(</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-34"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-34" aria-hidden="true" tabindex="-1"></a>    model,</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-35"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-35" aria-hidden="true" tabindex="-1"></a>    GEMB.<span class="fu">CESSpec</span>([beta2, <span class="fl">1</span> <span class="op">-</span> beta2]);</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-36"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-36" aria-hidden="true" tabindex="-1"></a>    demands<span class="op">=</span>[<span class="op">:</span>service2, <span class="op">:</span>labor],</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-37"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-37" aria-hidden="true" tabindex="-1"></a>    endowments<span class="op">=:</span>labor,</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-38"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-38" aria-hidden="true" tabindex="-1"></a>    endowment_quantities<span class="op">=</span>omega2,</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-39"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-39" aria-hidden="true" tabindex="-1"></a>    activity_start<span class="op">=</span><span class="fl">100.0</span>,</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-40"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-40" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=:</span>consumer2,</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-41"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-41" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-42"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-43"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-43" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> GEMB.<span class="fu">solve</span>(</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-44"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-44" aria-hidden="true" tabindex="-1"></a>    model;</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-45"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-45" aria-hidden="true" tabindex="-1"></a>    p0<span class="op">=</span>[<span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">1.0</span>],</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-46"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-46" aria-hidden="true" tabindex="-1"></a>    residual_tol<span class="op">=</span><span class="fl">1.0e-8</span>,</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-47"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-47" aria-hidden="true" tabindex="-1"></a>    silent<span class="op">=</span><span class="cn">true</span>,</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-48"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-48" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-49"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-50"><a href="#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3-50" aria-hidden="true" tabindex="-1"></a>GEMB.<span class="fu">print_equilibrium_statistics</span>(model, result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</figure>
+</div>
+</section>
+<section id="capital-rental-and-equity-a-4times3-model" class="level2" data-number="4.7">
+<h2 data-number="4.7" class="anchored" data-anchor-id="capital-rental-and-equity-a-4times3-model"><span class="header-section-number">4.7</span> Capital Rental and Equity: A <span class="math inline">\(4\times3\)</span> Model</h2>
+<p>Assume the following (see Torres, 2016, Tables 2.1 and 2.2):</p>
+<ol type="1">
+<li><p>The economy contains four commodities: a product, labor, capital services, and equity. There are three economic agents: a production firm, a consumer, and a capital-rental firm. Equity, money, and ad valorem tax certificates can all be regarded as ad valorem claims.</p></li>
+<li><p>The production firm produces the product according to <span class="math inline">\(y=x_2^{1-\beta_1}x_3^{\beta_1}\)</span>, where <span class="math inline">\(x_2\)</span> and <span class="math inline">\(x_3\)</span> denote labor and capital-service inputs, respectively, with <span class="math inline">\(0&lt;\beta_1&lt;1\)</span>.</p></li>
+<li><p>The consumer has utility function <span class="math inline">\(u=x_1^{\beta_2}x_2^{1-\beta_2}\)</span>, where <span class="math inline">\(0&lt;\beta_2&lt;1\)</span>, and is endowed with one unit of labor and one unit of equity.</p></li>
+<li><p>The capital-rental firm uses one unit of the product to provide one unit of capital services and recover <span class="math inline">\(1-\delta\)</span> units of the product after depreciation. Let <span class="math inline">\(r&gt;0\)</span> denote the required rate of return. For each unit of activity, the firm demands equity whose value is <span class="math inline">\(rp_1\)</span>.</p></li>
+</ol>
+<p>Let <span class="math inline">\(\mathbf p=(p_1,p_2,p_3,p_4)^\top\)</span>, and let <span class="math inline">\(y\)</span>, <span class="math inline">\(u\)</span>, and <span class="math inline">\(k\)</span> denote the activity levels of the production firm, the consumer, and the capital-rental firm, respectively. The demand matrix is</p>
+<p><span class="math display">\[
+\mathbf D(\mathbf p,y,u,k)
+=
+\begin{bmatrix}
+0
+&amp;
+u\left(\frac{\beta_2}{1-\beta_2}\frac{p_2}{p_1}\right)^{1-\beta_2}
+&amp;
+k
+\\
+y\left(\frac{1-\beta_1}{\beta_1}\frac{p_3}{p_2}\right)^{\beta_1}
+&amp;
+u\left(\frac{1-\beta_2}{\beta_2}\frac{p_1}{p_2}\right)^{\beta_2}
+&amp;
+0
+\\
+y\left(\frac{\beta_1}{1-\beta_1}\frac{p_2}{p_3}\right)^{1-\beta_1}
+&amp;
+0
+&amp;
+0
+\\
+0
+&amp;
+0
+&amp;
+\frac{rp_1}{p_4}k
+\end{bmatrix}
+\]</span></p>
+<p>and the supply matrix is</p>
+<p><span class="math display">\[
+\mathbf S(y,k)
+=
+\begin{bmatrix}
+y&amp;0&amp;(1-\delta)k\\
+0&amp;1&amp;0\\
+0&amp;0&amp;k\\
+0&amp;1&amp;0
+\end{bmatrix}
+\]</span></p>
+<p>By solving the wide-sense structural equilibrium model, the analytical solution for the equilibrium prices can be obtained. Taking the product as the numeraire commodity, so that <span class="math inline">\(p_1^*=1\)</span>, the analytical equilibrium prices are</p>
+<p><span class="math display">\[
+p_3^*=r+\delta,
+\qquad
+p_2^*
+=
+(1-\beta_1)
+\left(
+\frac{\beta_1}{r+\delta}
+\right)^{\frac{\beta_1}{1-\beta_1}}
+\]</span></p>
+<p>and</p>
+<p><span class="math display">\[
+p_4^*
+=
+\frac{
+r\beta_1\beta_2
+}{
+r(1-\beta_1\beta_2)+\delta(1-\beta_1)
+}
+p_2^*
+\]</span></p>
+<p>For <span class="math inline">\(r=1/0.97-1\approx0.030928\)</span>, <span class="math inline">\(\delta=0.06\)</span>, <span class="math inline">\(\beta_1=0.35\)</span>, and <span class="math inline">\(\beta_2=0.4\)</span>, the equilibrium price vector is</p>
+<p><span class="math display">\[
+\mathbf p^*
+\approx
+(1,\ 1.343115,\ 0.090928,\ 0.088654)^\top
+\]</span></p>
+<div id="lst-gemb_CD_capitalRentalEquity_nc4_na3" class="listing quarto-float quarto-figure quarto-figure-left anchored">
+<figure class="quarto-float quarto-float-lst figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-lst" id="lst-gemb_CD_capitalRentalEquity_nc4_na3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Listing&nbsp;4.5: A <span class="math inline">\(4\times3\)</span> Equilibrium Model with Capital Rental and Equity Claims
+</figcaption>
+<div aria-describedby="lst-gemb_CD_capitalRentalEquity_nc4_na3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="sourceCode" id="lst-gemb_CD_capitalRentalEquity_nc4_na3"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-1"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-1" aria-hidden="true" tabindex="-1"></a><span class="im">using</span> <span class="bu">GeneralEquilibriumModeling</span></span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-2"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-3"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-3" aria-hidden="true" tabindex="-1"></a>discount_factor <span class="op">=</span> <span class="fl">0.97</span></span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-4"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-4" aria-hidden="true" tabindex="-1"></a>return_rate <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> discount_factor <span class="op">-</span> <span class="fl">1</span></span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-5"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-5" aria-hidden="true" tabindex="-1"></a>delta <span class="op">=</span> <span class="fl">0.06</span></span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-6"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-6" aria-hidden="true" tabindex="-1"></a>beta_firm <span class="op">=</span> <span class="fl">0.35</span></span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-7"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-7" aria-hidden="true" tabindex="-1"></a>beta_consumer <span class="op">=</span> <span class="fl">0.4</span></span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-8"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-9"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-9" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> GEMB.<span class="fu">GEMBModel</span>(</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-10"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-10" aria-hidden="true" tabindex="-1"></a>    [</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-11"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-11" aria-hidden="true" tabindex="-1"></a>        <span class="op">:</span>product,</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-12"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-12" aria-hidden="true" tabindex="-1"></a>        <span class="op">:</span>labor,</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-13"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-13" aria-hidden="true" tabindex="-1"></a>        <span class="op">:</span>capital_service,</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-14"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-14" aria-hidden="true" tabindex="-1"></a>        GEMB.<span class="fu">CommoditySpec</span>(<span class="op">:</span>equity; price_lower_bound<span class="op">=</span><span class="fl">1.0e-10</span>),</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-15"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-15" aria-hidden="true" tabindex="-1"></a>    ];</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-16"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-16" aria-hidden="true" tabindex="-1"></a>    numeraire<span class="op">=:</span>product,</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-17"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-17" aria-hidden="true" tabindex="-1"></a>    numeraire_value<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-18"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-18" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-19"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-20"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-20" aria-hidden="true" tabindex="-1"></a>GEMB.<span class="fu">add_agent!</span>(</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-21"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-21" aria-hidden="true" tabindex="-1"></a>    model,</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-22"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-22" aria-hidden="true" tabindex="-1"></a>    GEMB.<span class="fu">CESSpec</span>([<span class="fl">1</span> <span class="op">-</span> beta_firm, beta_firm]);</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-23"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-23" aria-hidden="true" tabindex="-1"></a>    outputs<span class="op">=:</span>product,</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-24"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-24" aria-hidden="true" tabindex="-1"></a>    demands<span class="op">=</span>[<span class="op">:</span>labor, <span class="op">:</span>capital_service],</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-25"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-25" aria-hidden="true" tabindex="-1"></a>    activity_start<span class="op">=</span><span class="fl">100.0</span>,</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-26"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-26" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=:</span>production_firm,</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-27"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-27" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-28"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-29"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-29" aria-hidden="true" tabindex="-1"></a>GEMB.<span class="fu">add_agent!</span>(</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-30"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-30" aria-hidden="true" tabindex="-1"></a>    model,</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-31"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-31" aria-hidden="true" tabindex="-1"></a>    GEMB.<span class="fu">CESSpec</span>([beta_consumer, <span class="fl">1</span> <span class="op">-</span> beta_consumer]);</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-32"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-32" aria-hidden="true" tabindex="-1"></a>    demands<span class="op">=</span>[<span class="op">:</span>product, <span class="op">:</span>labor],</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-33"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-33" aria-hidden="true" tabindex="-1"></a>    endowments<span class="op">=</span>[<span class="op">:</span>labor, <span class="op">:</span>equity],</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-34"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-34" aria-hidden="true" tabindex="-1"></a>    endowment_quantities<span class="op">=</span>[<span class="fl">1.0</span>, <span class="fl">1.0</span>],</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-35"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-35" aria-hidden="true" tabindex="-1"></a>    activity_start<span class="op">=</span><span class="fl">100.0</span>,</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-36"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-36" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=:</span>consumer,</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-37"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-37" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-38"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-39"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-39" aria-hidden="true" tabindex="-1"></a>GEMB.<span class="fu">add_agent!</span>(</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-40"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-40" aria-hidden="true" tabindex="-1"></a>    model,</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-41"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-41" aria-hidden="true" tabindex="-1"></a>    GEMB.<span class="fu">CESSpec</span>([<span class="fl">1.0</span>]);</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-42"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-42" aria-hidden="true" tabindex="-1"></a>    outputs<span class="op">=</span>[<span class="op">:</span>product, <span class="op">:</span>capital_service],</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-43"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-43" aria-hidden="true" tabindex="-1"></a>    output_coefficients<span class="op">=</span>[<span class="fl">1</span> <span class="op">-</span> delta, <span class="fl">1.0</span>],</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-44"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-44" aria-hidden="true" tabindex="-1"></a>    demands<span class="op">=:</span>product,</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-45"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-45" aria-hidden="true" tabindex="-1"></a>    claim_rate<span class="op">=</span>return_rate,</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-46"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-46" aria-hidden="true" tabindex="-1"></a>    claim<span class="op">=</span>GEMB.<span class="fu">CommodityRef</span>(<span class="op">:</span>equity),</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-47"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-47" aria-hidden="true" tabindex="-1"></a>    activity_start<span class="op">=</span><span class="fl">100.0</span>,</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-48"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-48" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=:</span>capital_rental_firm,</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-49"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-49" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-50"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-51"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-51" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> GEMB.<span class="fu">solve</span>(</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-52"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-52" aria-hidden="true" tabindex="-1"></a>    model;</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-53"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-53" aria-hidden="true" tabindex="-1"></a>    p0<span class="op">=</span>[<span class="fl">1.0</span>, <span class="fl">1.343115</span>, <span class="fl">0.090928</span>, <span class="fl">0.088654</span>],</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-54"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-54" aria-hidden="true" tabindex="-1"></a>    residual_tol<span class="op">=</span><span class="fl">1.0e-8</span>,</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-55"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-55" aria-hidden="true" tabindex="-1"></a>    silent<span class="op">=</span><span class="cn">true</span>,</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-56"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-56" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-57"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-58"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-58" aria-hidden="true" tabindex="-1"></a>stats <span class="op">=</span> GEMB.<span class="fu">equilibrium_statistics</span>(model, result)</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-59"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-60"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-60" aria-hidden="true" tabindex="-1"></a>flows <span class="op">=</span> GEMB.<span class="fu">demand_supply_matrices</span>(model, result)</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-61"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-62"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-62" aria-hidden="true" tabindex="-1"></a>D <span class="op">=</span> flows.demand</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-63"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-63" aria-hidden="true" tabindex="-1"></a>S <span class="op">=</span> flows.supply</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-64"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-64" aria-hidden="true" tabindex="-1"></a>Sbar <span class="op">=</span> flows.net_supply</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-65"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-66"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-66" aria-hidden="true" tabindex="-1"></a>GEMB.<span class="fu">print_equilibrium_statistics</span>(model, result)</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-67"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-68"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-68" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Demand matrix D:"</span>)</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-69"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-69" aria-hidden="true" tabindex="-1"></a><span class="fu">display</span>(<span class="fu">hcat</span>(D, flows.total_demand))</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-70"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-71"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-71" aria-hidden="true" tabindex="-1"></a><span class="fu">println</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Supply matrix S:"</span>)</span>
+<span id="lst-gemb_CD_capitalRentalEquity_nc4_na3-72"><a href="#lst-gemb_CD_capitalRentalEquity_nc4_na3-72" aria-hidden="true" tabindex="-1"></a><span class="fu">display</span>(<span class="fu">hcat</span>(S, flows.total_supply))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</figure>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./Ch3PureExch.html" class="pagination-link" aria-label="Static Pure-Exchange Equilibrium">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Static Pure-Exchange Equilibrium</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./Ch5ProdExtended.html" class="pagination-link" aria-label="Static Equilibrium with Production: Extended Models">
+        <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Static Equilibrium with Production: Extended Models</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

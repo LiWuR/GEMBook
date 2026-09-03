@@ -8,6 +8,9 @@ filters:
 book:
   title: "GeneralEquilibriumModeling.jl and Structural Equilibrium Models"
   subtitle: "A Cookbook"
+  site-url: "https://liwur.github.io/GEMBook/"
+  google-analytics: "G-5XKP5QW2FE"
+  cookie-consent: true  
   author:
     - name: "LI Wu (liwu@staff.shu.edu.cn)"
       email: "liwu@staff.shu.edu.cn"

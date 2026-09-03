@@ -20,3 +20,6 @@ In general, the examples follow the progression
 **economic model → equilibrium formulation → computational representation → numerical solution**.
 
 Because the book and the package are developed together, some examples also illustrate newly introduced or extended modeling capabilities of `GeneralEquilibriumModeling.jl`.
+
+## License
+The book content is licensed under [CC BY-NC-ND 4.0](LICENSE.md). The Julia programs in the `code/` directory are licensed separately under the [MIT License](code/LICENSE.md).

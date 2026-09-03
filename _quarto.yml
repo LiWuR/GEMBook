@@ -1,15 +1,25 @@
 project:
   type: book
 
+
+filters:
+  - include-code-files
+
 book:
-  title: "General Equilibrium Modeling: From Structural Equilibrium Models to GEMB.jl"
-  author: "LI Wu"
-  date: "2026/8/25"
+  title: "GeneralEquilibriumModeling.jl and Structural Equilibrium Models"
+  subtitle: "A Cookbook"
+  author:
+    - name: "LI Wu (liwu@staff.shu.edu.cn)"
+      email: "liwu@staff.shu.edu.cn"
+  date: "2026-09-10"
   chapters:
     - index.qmd
-    #- intro.qmd
     - Ch1SEM.qmd
-    - summary.qmd
+    - Ch2GEM.qmd
+    - Ch3PureExch.qmd
+    - Ch4ProdBasic.qmd
+    - Ch5ProdExtended.qmd
+    - Ch6Intertemporal.qmd
     - references.qmd
 
 # bibliography: references.bib
@@ -19,6 +29,9 @@ format:
     theme: cosmo
   pdf:
     documentclass: scrreprt
-
-
-
+    latex-tinytex: true
+    latex-auto-install: false
+    keep-tex: true
+    include-in-header:
+      - text: |
+          \AtBeginDocument{\floatplacement{codelisting}{H}}

@@ -1,7 +1,30 @@
 # References {.unnumbered}
 
+
+Björk, T., A. Murgoci and X. Y. Zhou (2014) Mean–Variance Portfolio Optimization with State-Dependent Risk Aversion. Mathematical Finance, 24(1): 1-24.
+
+Bonnisseau, J. M., and Cornet, B. (1990) Existence of Marginal Cost Pricing Equilibria in Economies with Several Nonconvex Firms. Econometrica, 58(3): 661-682.
+
+Ferris, Michael C., and Todd S. Munson (2000) Complementarity Problems in GAMS and the PATH Solver. Journal of Economic Dynamics and Control, 24(2): 165-188.
+
+Fullerton, D. (1989) Notes on Displaced CES Functional Forms. Unpublished manuscript.
+
+Kemeny, J. G., O. Morgenstern and G. L. Thompson (1956) A Generalization of the von Neumann Model of an Expanding Economy. Econometrica, 24(2): 115-135.
+
 LI Wu (2019) General Equilibrium and Structural Dynamics: Perspectives of New Structural Economics. Beijing: Economic Science Press. (In Chinese)
 
-<!-- ::: {#refs} 
-:::
--->
+Mas-Colell, A., Whinston, M. D., Green, J. R. (1995) Microeconomic Theory. New York: Oxford University Press.
+
+McKenzie, L. W. (2002) Classical General Equilibrium Theory. MIT Press.
+
+Nakamura, Yutaka (2015) Mean-Variance Utility. Journal of Economic Theory, 160: 536-556.
+
+Pollak, Robert A. (1977) Price Dependent Preferences. American Economic Review, 67(2): 64–75.
+
+Quinzii, M. (1992) Increasing Returns and Efficiency. Oxford University Press.
+
+Samuelson, P. A. (1958) An Exact Consumption-Loan Model of Interest with or without the Social Contrivance of Money. Journal of Political Economy, 66(6): 467-482.
+
+Torres, Jose L. (2016) Introduction to Dynamic Macroeconomic General Equilibrium Models (Second Edition). Vernon Press.
+
+von Neumann, J. (1945) A Model of General Economic Equilibrium. The Review of Economic Studies, 13(1): 1-9. English translation of von Neumann (1937).

@@ -1,0 +1,536 @@
+# Intertemporal Equilibrium
+
+## Intertemporal Model Construction
+
+The GEMB high-level framework does not use a separate model type for intertemporal equilibrium. A finite-horizon intertemporal economy is constructed as an ordinary `GEMBModel` in which time is represented by the `period` axis of dated commodities. Thus, the same behavioral specifications and equilibrium solver used for static models can also be used for intertemporal models.
+
+Dated commodities are defined with `CommoditySpec`. For example,
+
+```julia
+product = GEMB.CommoditySpec(
+    :product;
+    axes=(period=1:4,),
+)
+```
+
+defines four dated product commodities. `CommodityRef` selects particular dated commodities or an entire intertemporal commodity path. For example, `CommodityRef(:product; period=2)` selects the period-2 product, whereas `CommodityRef(:product)` selects the product in all periods. A dated commodity can therefore be treated in exactly the same way as an ordinary commodity once its period has been specified.
+
+A concrete economic agent is added with the ordinary `GEMB.add_agent!` interface. Its identity may contain a period through `AgentRef`, while `RelativePeriod` can be used to express commodity references relative to that period. In particular,
+
+```julia
+GEMB.RelativePeriod(0)
+GEMB.RelativePeriod(1)
+GEMB.RelativePeriod(-1)
+```
+
+denote the current, next, and previous periods, respectively. Hence a producer operating in period $t$ may demand `CommodityRef(:product; period=RelativePeriod(0))` and supply `CommodityRef(:product; period=RelativePeriod(1))`, without explicitly writing the absolute period in each instance.
+
+When the same economic structure is repeated over several periods, `AgentTemplate` provides a more convenient representation. For example,
+
+```julia
+producer = GEMB.AgentTemplate(
+    :producer,
+    spec;
+    periods=1:3,
+    demands=[
+        GEMB.CommodityRef(
+            :labor;
+            period=GEMB.RelativePeriod(0),
+        ),
+    ],
+    outputs=[
+        GEMB.CommodityRef(
+            :product;
+            period=GEMB.RelativePeriod(1),
+        ),
+    ],
+)
+
+GEMB.add_agents!(model, producer)
+```
+
+creates the corresponding producers in periods 1, 2, and 3. `AgentTemplate` therefore describes a repeated structural pattern rather than a new type of economic behavior: `spec` remains an ordinary GEMB behavioral specification such as `CESSpec`, `CESMarginalUtilitySpec`, `MarshallDemandConsumerSpec`, or `ProductionFunctionSpec`.
+
+Parameters that differ across the repeated periods can be specified with `ByPeriod`. For example,
+
+```julia
+claim_rate=GEMB.ByPeriod([0.10, 0.15, 0.20])
+```
+
+assigns the three values to the corresponding template periods. A scalar value, by contrast, is used unchanged in every period. `RelativePeriod` and `ByPeriod` thus serve different purposes: the former changes the dated object referred to by an agent, whereas the latter changes a parameter value across repeated agents.
+
+Intertemporal claims, money, bonds, capital, and other dated objects do not require special commodity types. They can be represented as ordinary dated commodities and connected to economic agents through the usual GEMB demand, supply, endowment, claim, and auxiliary-condition mechanisms. Cross-period equilibrium relationships that cannot be represented directly by standard behavioral specifications can also be introduced through condition agents and observed equilibrium variables.
+
+The basic construction procedure is therefore the same as for a static GEMB model: define dated commodities with `CommoditySpec`, create a `GEMBModel`, add concrete agents with `add_agent!`, expand repeated structures with `AgentTemplate` and `add_agents!` when necessary, and finally solve the resulting model with the ordinary GEMB equilibrium solver. The intertemporal tools mainly provide a convenient way to organize dated commodities, repeated agents, relative-period references, and period-varying parameters, while leaving the underlying equilibrium framework unchanged.
+
+## A Finite-Horizon Intertemporal Equilibrium Model
+
+Consider a finite-horizon intertemporal equilibrium model in a closed economy. Assume the following:
+
+1. The economy contains two types of commodities, a product and labor, and two types of economic agents, a firm and a consumer.
+
+2. The consumer lives for $n_p$ periods, and the economy also lasts for $n_p$ periods.
+
+3. The economy is closed and has no external borrowing. The initial supply of the product is exogenously given.
+
+4. In period 1, the consumer is endowed with 150 units of the product. From period 1 through period $n_p-1$, the consumer is endowed with 100 units of labor in each period.
+
+5. The consumer consumes only the product and has demand for the product in periods $1,\ldots,n_p$. Intertemporal preferences are represented by a single-level Cobb--Douglas utility function with equal share coefficients across periods.
+
+6. There is one firm in each period from period 1 through period $n_p-1$. In period $t$, the firm uses the product and labor as inputs to produce the product available in period $t+1$. Its production function is
+
+$$
+f(x,l)=2\sqrt{xl}
+$$
+
+The product used as an input is completely consumed in production. 
+
+The corresponding GEMB implementation is given in @lst-gemb_intertemporalEquilibrium_nct2_nat2.
+
+::: {#lst-gemb_intertemporalEquilibrium_nct2_nat2}
+
+```{.julia include="code/gemb_intertemporalEquilibrium_nct2_nat2_v6.jl"}
+```
+
+A Finite-Horizon Intertemporal Equilibrium Model
+
+:::
+
+## Endogenous Interest Rates: A Four-Period $8\times2$ Pure-Exchange Model
+### Endogenous Interest Rates
+
+In a structural equilibrium model, money can be treated as an **ad valorem claim**, with the interest rate interpreted as the corresponding **ad valorem claim rate** (Li, 2019, Chapter 7). When an economic agent borrows money to finance an expenditure of value $V$, an interest rate $r$ generates an interest payment proportional to that value. In this sense, the monetary claim introduces a value wedge in the same way as other ad valorem claims.
+
+In structural equilibrium models, the price of money in one period refers to the interest generated by one physical unit of money over that period. Since the choice of the physical unit of money is arbitrary, this price depends on the chosen unit of measurement. The capital value of one physical unit of money is the present value of the stream of future interest payments generated by that unit of money.
+
+In structural equilibrium models, interest rates are often treated as exogenous parameters, for example, as rates determined by the central bank. An economy may involve multiple interest rates: rates may differ across periods, countries, financial markets, or economic agents. Given these rates, the equilibrium conditions determine commodity prices, activity levels, utility levels, and other endogenous variables. If one or more interest rates are instead treated as endogenous variables, the equilibrium system generally requires one additional independent auxiliary condition for each endogenous interest rate. Such auxiliary conditions may take the form of monetary policy rules, asset-pricing or no-arbitrage conditions, or intertemporal relationships between the value of money and the interest it generates.
+
+An auxiliary condition used here is the **interest rate–interest relationship**. Let $v_{\mathrm{int}}^{(t)}$ denote the present value of the interest generated in period $t$. Under a competitive money market and a constant money stock, the value of money at the beginning of period $t$ equals the present value of the stream of interest generated from period $t$ onward. Hence, the value of money remaining after the interest of period $t$ has been received is $\sum_{i>t}v_{\mathrm{int}}^{(i)}$. The endogenous interest rate therefore satisfies
+
+$$
+r^{(t)}
+=
+\frac{v_{\mathrm{int}}^{(t)}}
+{\displaystyle\sum_{i>t}v_{\mathrm{int}}^{(i)}}
+$$
+
+This interest rate–interest relationship can be added to the structural equilibrium conditions as an auxiliary condition, thereby allowing the equilibrium interest rate to be determined endogenously rather than specified in advance.
+
+### A Four-Period $8\times2$ Pure-Exchange Model
+
+Consider a four-period pure-exchange economy. Interest rates are first treated as exogenous parameters. The interest rate–interest relationship is then introduced as an auxiliary condition to determine the interest rates endogenously. The velocity of money is assumed to be one in every period.
+
+Assume the following:
+
+1. The economy contains eight commodities: labor $i$ and money $i$, $i=1,2,3,4$. There are two consumers, a laborer and a money owner (rentier). Labor 1 is taken as the numeraire commodity.
+
+2. The laborer is endowed with $\omega_i>0$ units of labor $i$, $i=1,\ldots,4$, and the money owner is endowed with one physical unit of money in each period. Both consumers have the utility function $\prod_{i=1}^4x_i^{\beta_i}$, where $x_i$ denotes consumption of labor $i$, $\sum_{i=1}^4\beta_i=1$, and $\beta_1>\beta_2>\beta_3>\beta_4>0$.
+
+3. Let $r_i>0$ denote the interest rate in period $i$. A purchase of labor $i$ with value $v$ requires an interest payment of $r_i v$.
+
+Let $\mathbf p=(1,p_2,\ldots,p_8)^\top$ and $\mathbf w=(w_1,w_2)^\top$, where $w_1$ and $w_2$ are the incomes of the two consumers. The demand and supply matrices are
+
+$$
+\mathbf D(\mathbf p,\mathbf w)
+=
+\begin{bmatrix}
+\frac{\beta_1w_1}{1+r_1}
+&
+\frac{\beta_1w_2}{1+r_1}
+\\
+\frac{\beta_2w_1}{p_2(1+r_2)}
+&
+\frac{\beta_2w_2}{p_2(1+r_2)}
+\\
+\frac{\beta_3w_1}{p_3(1+r_3)}
+&
+\frac{\beta_3w_2}{p_3(1+r_3)}
+\\
+\frac{\beta_4w_1}{p_4(1+r_4)}
+&
+\frac{\beta_4w_2}{p_4(1+r_4)}
+\\
+\frac{r_1\beta_1w_1}{(1+r_1)p_5}
+&
+\frac{r_1\beta_1w_2}{(1+r_1)p_5}
+\\
+\frac{r_2\beta_2w_1}{(1+r_2)p_6}
+&
+\frac{r_2\beta_2w_2}{(1+r_2)p_6}
+\\
+\frac{r_3\beta_3w_1}{(1+r_3)p_7}
+&
+\frac{r_3\beta_3w_2}{(1+r_3)p_7}
+\\
+\frac{r_4\beta_4w_1}{(1+r_4)p_8}
+&
+\frac{r_4\beta_4w_2}{(1+r_4)p_8}
+\end{bmatrix}
+$$
+
+and
+
+$$
+\mathbf S
+=
+\begin{bmatrix}
+\omega_1&0\\
+\omega_2&0\\
+\omega_3&0\\
+\omega_4&0\\
+0&1\\
+0&1\\
+0&1\\
+0&1
+\end{bmatrix}
+$$
+
+Solving the equality-form wide-sense structural equilibrium model for given interest rates gives
+
+$$
+p_j^*
+=
+\frac{\beta_j(1+r_1)\omega_1}
+{\beta_1(1+r_j)\omega_j},
+\qquad j=2,3,4
+$$
+
+and
+
+$$
+p_{4+i}^*
+=
+\frac{r_i\beta_i(1+r_1)\omega_1}
+{\beta_1(1+r_i)},
+\qquad i=1,2,3,4
+$$
+
+where $p_5^*=r_1\omega_1$. The prices $p_5^*,\ldots,p_8^*$ are the present values of the interest payments in the four periods. The equilibrium incomes are
+
+$$
+w_1^*
+=
+\omega_1
++
+\frac{(1+r_1)\omega_1}{\beta_1}
+\sum_{j=2}^4\frac{\beta_j}{1+r_j}
+$$
+
+and
+
+$$
+w_2^*
+=
+r_1\omega_1
++
+\frac{(1+r_1)\omega_1}{\beta_1}
+\sum_{i=2}^4\frac{r_i\beta_i}{1+r_i}
+$$
+
+The interest rates can now be endogenized by adding the interest rate–interest relationship. Under the terminal condition $r_4=+\infty$, the auxiliary conditions are
+
+$$
+r_1
+=
+\frac{p_5^*}{p_6^*+p_7^*+p_8^*},
+\qquad
+r_2
+=
+\frac{p_6^*}{p_7^*+p_8^*},
+\qquad
+r_3
+=
+\frac{p_7^*}{p_8^*}
+$$
+
+Under the terminal condition $r_4=+\infty$, the ordinary price of labor 4 converges to zero, while its interest-inclusive price may remain finite. Define the terminal interest-inclusive price as
+
+$$
+\widetilde p_4
+:=
+\lim_{r_4\to+\infty}(1+r_4)p_4
+$$
+
+Since the entire endowment $\omega_4$ of labor 4 is traded in equilibrium, the value of the corresponding interest payment satisfies
+
+$$
+p_8
+=
+r_4p_4\omega_4
+$$
+
+Therefore,
+
+$$
+\widetilde p_4
+=
+\lim_{r_4\to+\infty}r_4p_4
+=
+\frac{p_8}{\omega_4}
+$$
+
+Thus, although $r_4$ is infinite and $p_4=0$ under the terminal condition, the effective unit cost of purchasing labor 4 remains finite and is represented by the terminal interest-inclusive price $\widetilde p_4$.
+
+Substituting the conditional-equilibrium expressions for $p_5^*,\ldots,p_8^*$ into these auxiliary conditions gives
+
+$$
+r_1^*
+=
+\frac{\beta_1}{\beta_2}-1,
+\qquad
+r_2^*
+=
+\frac{\beta_2}{\beta_3}-1,
+\qquad
+r_3^*
+=
+\frac{\beta_3}{\beta_4}-1
+$$
+Thus, the model illustrates a general way to endogenize interest rates in structural equilibrium models: first solve the equilibrium conditional on exogenous interest rates, and then add one independent auxiliary condition for each interest rate to be determined endogenously. 
+
+For the numerical example, let
+
+$$
+(\beta_1,\beta_2,\beta_3,\beta_4)=(0.4,0.3,0.2,0.1)
+$$
+
+and suppose that the laborer is endowed with 100 units of each labor commodity.
+
+The numerical equilibrium gives
+
+$$
+p_1=1,\qquad p_2=\frac{2}{3},\qquad p_3=\frac{1}{3},\qquad p_4=0,
+$$
+
+$$
+p_5=p_6=p_7=p_8=\frac{100}{3},
+$$
+
+and
+
+$$
+r_1=\frac{1}{3},\qquad r_2=\frac{1}{2},\qquad r_3=1
+$$
+
+
+
+The corresponding GEMB implementation is given in @lst-gemb_intertemporalEquilibrium_endogenousInterestRate_nct2_nat2. The two consumers are represented by Marshall-demand specifications, while a virtual condition agent is used to determine the first three interest rates and impose the terminal condition. 
+
+::: {#lst-gemb_intertemporalEquilibrium_endogenousInterestRate_nct2_nat2}
+
+```{.julia include="code/gemb_intertemporalEquilibrium_endogenousInterestRate_nct2_nat2_v5.jl"}
+```
+A Four-Period $8\times2$ Pure-Exchange Model with Endogenous Interest Rates
+
+:::
+
+## A Basic Overlapping-Generations Trading Model
+### The Model
+Consider a modified version of the basic overlapping-generations (OLG) trading model of Samuelson (1958). Assume the following:
+
+1. The economy lasts for $n_p$ periods and contains $n_p$ dated commodities and $n_p-1$ consumers.
+
+2. Consumer 1 has utility function $u_1=x_1^{\beta_1}x_2^{\beta_2}x_3^{1-\beta_1-\beta_2}$, where $\beta_1,\beta_2\geq0$ and $\beta_1+\beta_2\leq1$.
+
+3. Consumer $i$, $i=2,\ldots,n_p-2$, has utility function $u_i=(x_i x_{i+1}x_{i+2})^{1/3}$.
+
+4. Consumer $n_p-1$ has utility function $u_{n_p-1}=x_{n_p-1}^{\bar\beta_1}x_{n_p}^{\bar\beta_2}x_1^{1-\bar\beta_1-\bar\beta_2}$, where $\bar\beta_1,\bar\beta_2\geq0$ and $\bar\beta_1+\bar\beta_2\leq1$. When $\bar\beta_1+\bar\beta_2=1$, the model has a time-line structure; when $\bar\beta_1+\bar\beta_2<1$, consumer $n_p-1$ also demands the first-period commodity and the model has a time-circle structure.
+
+5. Consumer $i$, $i=1,\ldots,n_p-1$, is endowed with 100 units of commodity $i$ and 100 units of commodity $i+1$.
+
+Consider the case $n_p=6$ and restrict equilibrium prices to a geometric path,
+
+$$
+\mathbf p=(1,q,q^2,q^3,q^4,q^5)^\top,\qquad q>0
+$$
+
+Let $\mathbf w=(w_1,\ldots,w_5)^\top$ denote consumer incomes. Since consumer $i$ owns commodities $i$ and $i+1$,
+
+$$
+w_i=100(p_i+p_{i+1}),\qquad i=1,\ldots,5
+$$
+
+The demand and supply matrices are
+
+$$
+\mathbf D(\mathbf p,\mathbf w)=
+\begin{bmatrix}
+\beta_1 w_1
+&0&0&0&(1-\bar\beta_1-\bar\beta_2)w_5\\
+\frac{\beta_2w_1}{p_2}
+&\frac{w_2}{3p_2}
+&0&0&0\\
+\frac{(1-\beta_1-\beta_2)w_1}{p_3}
+&\frac{w_2}{3p_3}
+&\frac{w_3}{3p_3}
+&0&0\\
+0
+&\frac{w_2}{3p_4}
+&\frac{w_3}{3p_4}
+&\frac{w_4}{3p_4}
+&0\\
+0&0
+&\frac{w_3}{3p_5}
+&\frac{w_4}{3p_5}
+&\frac{\bar\beta_1w_5}{p_5}\\
+0&0&0
+&\frac{w_4}{3p_6}
+&\frac{\bar\beta_2w_5}{p_6}
+\end{bmatrix}
+$$
+
+and
+
+$$
+\mathbf S=
+\begin{bmatrix}
+100&0&0&0&0\\
+100&100&0&0&0\\
+0&100&100&0&0\\
+0&0&100&100&0\\
+0&0&0&100&100\\
+0&0&0&0&100
+\end{bmatrix}
+$$
+
+The four endpoint preference parameters $\beta_1$, $\beta_2$, $\bar\beta_1$, and $\bar\beta_2$ are treated as endogenous. The equality-form wide-sense structural equilibrium model consists of the revenue-expenditure balance conditions and commodity-market clearing conditions, together with the geometric price-path restriction. Two equilibria are obtained.
+
+The first is a **time-circle equilibrium**:
+
+$$
+q^*=1,\qquad
+\mathbf p^*=(1,1,1,1,1,1)^\top,\qquad
+\mathbf w^*=(200,200,200,200,200)^\top
+$$
+
+with
+
+$$
+\beta_1^*=0,\qquad
+\beta_2^*=\frac23,\qquad
+1-\beta_1^*-\beta_2^*=\frac13
+$$
+
+and
+
+$$
+\bar\beta_1^*=\frac13,\qquad
+\bar\beta_2^*=\frac16,\qquad
+1-\bar\beta_1^*-\bar\beta_2^*=\frac12
+$$
+
+The corresponding demand matrix is
+
+$$
+\mathbf D^*=
+\begin{bmatrix}
+0&0&0&0&100\\
+\frac{400}{3}&\frac{200}{3}&0&0&0\\
+\frac{200}{3}&\frac{200}{3}&\frac{200}{3}&0&0\\
+0&\frac{200}{3}&\frac{200}{3}&\frac{200}{3}&0\\
+0&0&\frac{200}{3}&\frac{200}{3}&\frac{200}{3}\\
+0&0&0&\frac{200}{3}&\frac{100}{3}
+\end{bmatrix}
+$$
+
+Since consumer 5 spends a positive share of income on commodity 1, the last generation is linked back to the first period, producing a time-circle structure.
+
+The second is a **time-line equilibrium**. Let
+
+$$
+q^*=\frac{3+\sqrt{13}}{2}
+$$
+
+Then
+
+$$
+\mathbf p^*=(1,q^*,q^{*2},q^{*3},q^{*4},q^{*5})^\top
+$$
+
+and
+
+$$
+\mathbf w^*
+=
+100(1+q^*)
+(1,q^*,q^{*2},q^{*3},q^{*4})^\top
+$$
+
+The endpoint preference parameters are
+
+$$
+\beta_1^*=\frac{5-\sqrt{13}}6,\qquad
+\beta_2^*=\frac{-1+\sqrt{13}}6,\qquad
+1-\beta_1^*-\beta_2^*=\frac13
+$$
+
+and
+
+$$
+\bar\beta_1^*=\frac13,\qquad
+\bar\beta_2^*=\frac23,\qquad
+1-\bar\beta_1^*-\bar\beta_2^*=0
+$$
+
+The corresponding demand matrix is
+
+$$
+\mathbf D^*
+=
+\frac{100(1+q^*)}{3}
+\begin{bmatrix}
+\frac{5-\sqrt{13}}2&0&0&0&0\\
+\frac{-1+\sqrt{13}}{2q^*}&1&0&0&0\\
+\frac{1}{q^{*2}}&\frac{1}{q^*}&1&0&0\\
+0&\frac{1}{q^{*2}}&\frac{1}{q^*}&1&0\\
+0&0&\frac{1}{q^{*2}}&\frac{1}{q^*}&1\\
+0&0&0&\frac{1}{q^{*2}}&\frac{2}{q^*}
+\end{bmatrix}
+$$
+
+In this equilibrium, $1-\bar\beta_1^*-\bar\beta_2^*=0$, so the last consumer has no demand for the first-period commodity and the intergenerational trading structure forms a time line rather than a circle.
+
+Both solutions represent steady-state equilibrium paths. Although the finite-horizon model contains special endpoint consumers to close the six-period economy, its interior periods reproduce the same intergenerational structure under a one-period shift of calendar time and cohort index. In particular, the endowment and age-specific demand patterns are unchanged, while prices and incomes are multiplied by the constant factor $q^*$. Hence, abstracting from the endpoint closure, the interior equilibrium structure can be extended indefinitely forward and backward in time, yielding the corresponding steady-state OLG equilibrium path.
+
+### Computational Implementation
+
+The model is implemented by treating products delivered in different periods as different commodities. For $n_p=6$, the economy therefore contains six dated commodities with price vector $\mathbf p=(p_1,\ldots,p_6)^\top$, and the first-period product is chosen as the numeraire, so that $p_1=1$.
+
+Consumer $i$ is endowed with 100 units of commodities $i$ and $i+1$. Hence its income is determined directly by prices as $w_i=100(p_i+p_{i+1})$ and does not need to be introduced as a separate equilibrium variable. Consumers 2--4 have equal-share Cobb--Douglas preferences and are represented directly by `CESSpec` with three shares equal to $1/3$.
+
+The preference shares of consumers 1 and 5 are endogenous. Their demands are therefore specified by `MarshallDemandConsumerSpec`. Consumer 1 observes the endogenous variables $\beta_1$ and $\beta_2$ and has expenditure shares $\beta_1$, $\beta_2$, and $1-\beta_1-\beta_2$. Consumer 5 similarly observes $\bar\beta_1$ and $\bar\beta_2$ and has expenditure shares $\bar\beta_1$, $\bar\beta_2$, and $1-\bar\beta_1-\bar\beta_2$.
+
+A `ConditionAgentSpec` is introduced to determine the steady-state price path and the four endpoint preference parameters. Its endogenous variables are
+
+$$
+(\log q,\beta_1,\beta_2,\bar\beta_1,\bar\beta_2)
+$$
+
+where $q=\exp(\log q)>0$. The five associated conditions impose the geometric price path
+
+$$
+p_{t+1}=qp_t,\qquad t=1,\ldots,5
+$$
+
+Together with $p_1=1$, these conditions imply
+
+$$
+\mathbf p=(1,q,q^2,q^3,q^4,q^5)^\top
+$$
+
+Although the four preference parameters do not appear explicitly in these five price-path conditions, they enter the demands of consumers 1 and 5 and therefore affect commodity-market clearing. PATH consequently solves prices, $q$, and the four preference parameters jointly so that both the geometric price conditions and all market-clearing conditions are satisfied.
+
+After fixing the numeraire, there are five ordinary price variables $p_2,\ldots,p_6$ and five additional endogenous variables in the condition agent. Correspondingly, Walras' law leaves five independent commodity-market clearing conditions, while the condition agent supplies five price-path equations. The resulting system is therefore closed.
+
+The model has multiple equilibria. To obtain the two equilibria reported above, the same initial values $(0.1,0.1,0.1,0.1)$ are used for the four preference parameters, while only the initial value of $q$ is changed. The time-circle equilibrium is obtained from $q_0=0.5$, whereas the time-line equilibrium is obtained from $q_0=2$. 
+
+The corresponding GEMB implementation is given in @lst-gemb_OLG_trading.
+
+::: {#lst-gemb_OLG_trading}
+
+```{.julia include="code/gemb_OLG_trading_v1.jl"}
+```
+
+A Basic Overlapping-Generations Trading Model
+
+:::

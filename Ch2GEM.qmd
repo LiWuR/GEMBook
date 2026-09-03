@@ -1,0 +1,898 @@
+# The GEMB High-Level Framework, the GEMB Low-Level Framework, and the GEM Framework
+
+<!-- liwu1 -->
+
+`GeneralEquilibriumModeling.jl` provides three interconnected modeling frameworks: the GEM framework, the GEMB low-level framework, and the GEMB high-level framework. The GEM framework allows users to construct economic agents' net supply functions and their associated complementarity conditions directly. The GEMB low-level framework generates GEM economic agents through behavioral specifications and agent builders. The GEMB high-level framework organizes complete equilibrium models using commodity names, economic agent names, and high-level model interfaces. In most cases, the GEMB high-level framework is sufficient, and it is therefore the framework on which this book primarily focuses.
+
+This chapter introduces the basic modeling methods of `GeneralEquilibriumModeling.jl` through some simple equilibrium examples.
+
+
+## Basic Example: A $2\times2$ Cobb--Douglas Equilibrium with Production
+
+Assume the following:
+
+1. The economy contains two commodities, product and labor, and two economic agents, a firm and a consumer. Product is taken as the numeraire commodity.
+
+2. The firm uses product and labor to produce product. Its production function is $y=2x_1^{1/2}x_2^{1/2}$, where $x_1$ and $x_2$ denote the inputs of product and labor, respectively, and $y$ denotes total product output.
+
+3. The consumer is endowed with $\omega>0$ units of labor. The utility function is $u=x_{1}^{1/2}x_{2}^{1/2}$, where $x_{1}$ and $x_{2}$ denote the quantities of product and labor consumed by the consumer, respectively.
+
+Let the price vector be $\mathbf p=(1,p_2)^\top$, the firm's activity level be $y$, and the consumer's activity level be the utility level $u$. The demand and supply matrices are
+
+$$
+\mathbf D(\mathbf p,u,y)
+=
+\begin{bmatrix}
+\frac{y}{2}\sqrt{p_2} & u\sqrt{p_2}\\[8pt]
+\frac{y}{2\sqrt{p_2}} & \frac{u}{\sqrt{p_2}}
+\end{bmatrix}
+$$
+
+and
+
+$$
+\mathbf S(y)
+=
+\begin{bmatrix}
+y & 0\\
+0 & \omega
+\end{bmatrix}
+$$
+
+Consider the following equality-form wide-sense structural equilibrium model:
+
+$$
+\begin{aligned}
+\mathbf p^\top\mathbf D(\mathbf p,u,y)
+&=\mathbf p^\top\mathbf S(y)\\
+\mathbf D(\mathbf p,u,y)\mathbf 1
+&=\mathbf S(y)\mathbf 1
+\end{aligned}
+$$
+
+The equilibrium price vector, firm activity level, and consumer utility level are, respectively,
+
+$$
+\mathbf p^*=(1,1)^\top,\qquad
+y^*=\omega,\qquad
+u^*=\frac{\omega}{2}
+$$
+
+The equilibrium demand and supply matrices are
+
+$$
+\mathbf D^*
+=
+\begin{bmatrix}
+\frac{\omega}{2} & \frac{\omega}{2}\\[6pt]
+\frac{\omega}{2} & \frac{\omega}{2}
+\end{bmatrix},
+\qquad
+\mathbf S^*
+=
+\begin{bmatrix}
+\omega & 0\\
+0 & \omega
+\end{bmatrix}
+$$
+
+In particular, when $\omega=100$,
+
+$$
+\mathbf p^*=(1,1)^\top,\qquad
+y^*=100,\qquad
+u^*=50
+$$
+
+In the next few sections, we will construct the basic example above using the GEMB high-level framework, the GEMB low-level framework, and the GEM framework, respectively.
+
+
+## GEMB High-Level Framework
+
+The GEMB high-level framework is built on the GEMB low-level framework and the GEM framework. Users specify a model using commodity names, behavioral specifications, and declarations of economic agents. They do not need to assign commodity indices manually or directly construct `GEM.NetSupplyAgent` or `GEM.NetSupplyEquilibriumModel` objects. GEMB progressively converts the high-level model into a GEM equilibrium model and then calls the GEM solver.
+
+The GEMB high-level framework mainly involves the following steps:
+
+1. Use `GEMBModel` to specify the set of commodities, the numeraire commodity, and price bounds.
+
+2. Use `CESSpec`, `DCESSpec`, or other behavioral specifications to describe production and consumption behavior.
+
+3. Use `add_agent!` to add firms, consumers, and other economic agents.
+
+4. Use `solve` to convert the high-level model into a GEM equilibrium model and solve it.
+
+In the GEMB low-level framework, commodities are represented by integer indices. The GEMB high-level framework allows commodities to be referred to directly by name. GEMB automatically converts commodity names into the integer indices required by the underlying model.
+
+During the solution process, GEMB sequentially performs commodity-name resolution, agent construction, aggregation of net supplies, and assembly of the GEM equilibrium model, and finally calls the solver provided through GEM. The solution is returned using the common equilibrium result type, from which information such as prices, activity levels, agents' net supplies, and market residuals can be obtained.
+
+The main feature of the GEMB high-level framework is that it organizes models using economically meaningful commodity names and agent declarations. It hides technical details such as commodity indices, `NetSupplyAgent` construction, and low-level equilibrium-model assembly. For problems that require custom net supply functions or specialized complementarity conditions, users can instead work with the GEMB low-level framework or the GEM framework.
+
+The GEMB low-level framework provides reusable construction of economic agents, whereas the GEMB high-level framework treats GEMBModel as a one-shot model representation. For each economic agent, the high-level model retains both the original economic specification and its resolved commodity mappings, together with the constructed net-supply agent used for equilibrium computation.
+
+::: {#lst-gemb_basicExample_CD_nc2_na2}
+
+```{.julia include="code/gemb_basicExample_CD_nc2_na2_v2.jl"}
+```
+
+A $2\times2$ Cobb--Douglas Equilibrium Model: The GEMB High-Level Framework
+
+:::
+
+
+## GEMB Low-Level Framework
+
+The GEMB low-level framework lies between the GEM framework and the GEMB high-level framework. The GEM framework requires users to define economic agents' net supply functions and equilibrium conditions directly. The GEMB low-level framework instead allows users to first specify production, consumption, and other economic behaviors and then use `build_agent` to convert these behavioral specifications into `GEM.NetSupplyAgent` objects.
+
+Compared with the GEMB high-level framework, however, the GEMB low-level framework still requires users to work relatively close to the underlying GEM representation. In particular, input commodities, output commodities, and endowments are generally specified by commodity indices, and the resulting agents are assembled and solved using the GEM framework.
+
+The central idea of the GEMB low-level framework is to separate economic modeling into two steps: **behavioral specification** and **agent construction**.
+
+A behavioral specification describes how an economic agent determines its demand as prices and its activity level change. For example, `ActivityDemandSpec` allows the user to provide a demand function directly. Common specifications such as `CESSpec` and `DCESSpec` provide more specialized representations for CES, Cobb--Douglas, and Leontief demand structures.
+
+After the behavioral specification has been defined, `build_agent` converts it into a GEM economic agent. During this step, the user specifies such information as the relevant commodity indices, outputs, endowments, activity variable, initial value, and the condition rule associated with the agent.
+
+For a firm, the activity variable usually represents its production level. Given prices and an activity level, the behavioral specification determines the firm's input demand. The firm's net supply is then obtained by subtracting its input demand from its output supply. Under constant returns to scale, input demand changes proportionally with the production activity level.
+
+GEMB can associate the firm's activity level with a unit revenue-expenditure balance condition. Economically, this condition compares the expenditure required for one unit of production activity with the revenue generated by that activity. If unit expenditure exceeds unit revenue, the firm cannot operate at a positive activity level. If the firm operates at a positive activity level, unit expenditure and unit revenue must be equal.
+
+For a consumer, the activity variable usually represents utility. Given prices and a utility level, the behavioral specification determines the compensated demand required to attain that utility level. The consumer's net supply is obtained by subtracting this consumption demand from the consumer's endowment.
+
+The consumer's utility level can be associated with a total revenue-expenditure balance condition. This condition compares total consumption expenditure with the income generated by the consumer's endowment. When the consumer attains a positive utility level, total expenditure equals endowment income.
+
+The basic modeling procedure of the GEMB low-level framework is as follows:
+
+1. Define the economic agent's behavioral specification using a type such as `ActivityDemandSpec`, `CESSpec`, or `DCESSpec`.
+
+2. Use `build_agent` to specify the agent's input commodities, output commodities, endowments, activity variable, initial value, and other relevant settings, and convert the behavioral specification into a `GEM.NetSupplyAgent`.
+
+3. Use `GEM.NetSupplyEquilibriumModel` to assemble the resulting economic agents and commodity markets, and then call a GEM solver to solve the equilibrium model.
+
+In the GEM framework and the GEMB low-level framework, the user may explicitly map commodity names to commodity indices before passing them to `NetSupplyAgent` or `build_agent`, respectively. In the GEMB high-level framework, `GEMBModel` performs this mapping automatically and also assembles the resulting agents into the equilibrium model.
+
+The GEMB low-level framework therefore retains relatively direct control over commodity indices, economic agents, activity variables, and equilibrium conditions, while reducing the need to write net supply functions manually. It is useful when users want more control than the GEMB high-level framework provides but do not want to construct every net supply function and complementarity condition directly in GEM.
+
+::: {#lst-gemb_basicExample_CD_lowLevel_nc2_na2}
+
+```{.julia include="code/gemb_basicExample_CD_lowLevel_nc2_na2_v1.jl"}
+```
+
+A $2\times2$ Cobb--Douglas Equilibrium Model: The GEMB Low-Level Framework
+
+:::
+
+## GEM Framework
+
+The GEM framework is the foundational modeling and solution framework of `GeneralEquilibriumModeling.jl`. It takes the net supply functions of economic agents as its basic modeling objects and transforms agent behavioral conditions, commodity market-clearing conditions, and other auxiliary conditions into a unified mixed complementarity problem. The resulting problem is constructed with `JuMP` and solved numerically using `PATHSolver.jl`. Models constructed through the GEMB low-level framework and the GEMB high-level framework are also ultimately converted into GEM equilibrium models.
+
+### Net Supply Representation
+
+In a wide-sense structural equilibrium model, each row of the demand matrix and the supply matrix corresponds to a commodity, and each column corresponds to an economic agent. Let the demand matrix and the supply matrix be denoted by $\mathbf D(\cdot)$ and $\mathbf S(\cdot)$, respectively. The **net supply matrix** is defined as
+
+$$
+\bar{\mathbf S}(\cdot)
+:=
+\mathbf S(\cdot)-\mathbf D(\cdot)
+$$
+
+The element $\bar S_{ij}$ represents the net supply of commodity $i$ by economic agent $j$. A positive value represents net supply, whereas a negative value represents net demand. The net supply matrix therefore combines the demand matrix and the supply matrix into a single representation.
+
+Let $\mathbf D_{\cdot j}$ and $\mathbf S_{\cdot j}$ denote the demand vector and supply vector of economic agent $j$, respectively. Column $j$ of the net supply matrix is the net supply vector of economic agent $j$:
+
+$$
+\bar{\mathbf s}_j
+:=
+\mathbf S_{\cdot j}-\mathbf D_{\cdot j}
+$$
+
+Thus,
+
+$$
+\bar{\mathbf S}
+=
+\begin{bmatrix}
+\bar{\mathbf s}_1 &
+\bar{\mathbf s}_2 &
+\cdots &
+\bar{\mathbf s}_m
+\end{bmatrix}
+$$
+
+where $\bar{\mathbf s}_j$ describes the net supplies of all commodities by economic agent $j$.
+
+Using the net supply matrix, the mixed-form wide-sense structural equilibrium model can be written compactly as
+
+$$
+\mathbf p^\top\bar{\mathbf S}(\cdot)=\mathbf 0
+$$
+
+$$
+\bar{\mathbf S}(\cdot)\mathbf 1\geq\mathbf 0
+$$
+
+The first condition states that every economic agent satisfies revenue-expenditure balance. Since column $j$ of $\bar{\mathbf S}$ is $\bar{\mathbf s}_j$, it is equivalent to
+
+$$
+\mathbf p^\top\bar{\mathbf s}_j=0,
+\qquad
+j=1,\ldots,m
+$$
+
+The second condition states that the total net supply of every commodity is nonnegative, or equivalently, that total supply is no less than total demand.
+
+The total net supply vector of all economic agents is
+
+$$
+\bar{\mathbf s}
+:=
+\sum_{j=1}^{m}\bar{\mathbf s}_j
+=
+\bar{\mathbf S}\mathbf 1
+$$
+
+so the commodity-side condition can also be written as
+
+$$
+\bar{\mathbf s}\geq\mathbf 0
+$$
+
+When free commodities and excess supply are allowed, the commodity market condition can be expressed more generally as
+
+$$
+\mathbf 0
+\leq
+\bar{\mathbf S}(\cdot)\mathbf 1
+\perp
+\mathbf p
+\geq
+\mathbf 0
+$$
+
+or equivalently,
+
+$$
+\mathbf 0
+\leq
+\bar{\mathbf s}
+\perp
+\mathbf p
+\geq
+\mathbf 0
+$$
+
+That is,
+
+$$
+\bar{\mathbf s}\geq\mathbf 0,\qquad
+\mathbf p\geq\mathbf 0,\qquad
+\mathbf p^\top\bar{\mathbf s}=0
+$$
+
+If the price of commodity $i$ is positive, its market must clear. If commodity $i$ has positive excess supply, its equilibrium price must be zero. When all equilibrium commodity prices are positive, the market condition reduces to
+
+$$
+\bar{\mathbf s}=\mathbf 0
+$$
+
+For an economic agent with a constant-returns-to-scale production structure, let $z_j$ denote its activity level and let $\bar{\mathbf s}_j^{u}$ denote its net supply vector per unit of activity. Then
+
+$$
+\bar{\mathbf s}_j
+=
+z_j\bar{\mathbf s}_j^{u}
+$$
+
+When $z_j>0$, the unit revenue-expenditure balance condition is
+
+$$
+\mathbf p^\top\bar{\mathbf s}_j^{u}=0
+$$
+
+If the economic agent is allowed to be inactive, the more general unit revenue-expenditure balance condition is
+
+$$
+0
+\leq
+-\mathbf p^\top\bar{\mathbf s}_j^{u}
+\perp
+z_j
+\geq
+0
+$$
+
+where $-\mathbf p^\top\bar{\mathbf s}_j^{u}$ is expenditure minus revenue per unit of activity, that is, the unit loss or unit excess cost.
+
+The net supply representation therefore does not change the economic meaning of the wide-sense structural equilibrium model. It simply combines demand and supply into a single matrix. Because the GEM framework directly computes the net supply of each economic agent, it generally does not need to construct the complete demand matrix and supply matrix explicitly.
+
+
+### Economic Agents
+
+The GEM framework uses `NetSupplyAgent` to represent an economic agent. Each economic agent mainly contains the following information:
+
+1. The commodities associated with the agent.
+
+2. The agent's endogenous variables, together with their lower bounds, upper bounds, and initial values.
+
+3. A function that calculates net supply from the agent variables, commodity prices, and observed variables.
+
+4. Complementarity conditions paired with the agent variables.
+
+5. Names used to identify the agent and its variables.
+
+Let $\mathbf v_j$ denote the local variable vector of economic agent $j$, $\mathbf p_j$ the local price vector for the commodities associated with that agent, and $\mathbf o_j$ the vector of observed variables. The agent's net supply function can then be written generally as
+
+$$
+\bar{\mathbf s}_j
+=
+\bar{\mathbf s}_j(\mathbf v_j,\mathbf p_j,\mathbf o_j)
+$$
+
+Local variables belong only to the economic agent itself, whereas observed variables may refer to variables of other agents, commodity prices, or auxiliary variables. This mechanism makes it possible to represent inter-agent relationships, endogenous tax rates, endogenous interest rates, and other economic relationships that must be determined jointly within the equilibrium model.
+
+`NetSupplyAgent` is the unified agent representation used by the GEM framework. Firms, consumers, and condition agents may have different economic interpretations, but numerically they can all be represented as combinations of local variables, net supply functions, and local complementarity conditions.
+
+<!-- liwu1 -->
+### Agent Conditions
+
+For economic agent $j$, let the condition function paired with the local variable vector $\mathbf v_j$ be
+
+$$
+\mathbf c_j
+=
+\mathbf c_j(
+\mathbf v_j,
+\mathbf p_j,
+\bar{\mathbf s}_j,
+\mathbf o_j
+)
+$$
+
+If the lower and upper bounds of variable $v_{jk}$ are $\underline v_{jk}$ and $\overline v_{jk}$, respectively, the corresponding mixed complementarity condition is
+
+$$
+c_{jk}
+\perp
+\underline v_{jk}
+\leq
+v_{jk}
+\leq
+\overline v_{jk}
+$$
+
+which means
+
+$$
+\begin{cases}
+c_{jk}\geq0,
+&v_{jk}=\underline v_{jk}\\
+c_{jk}=0,
+&\underline v_{jk}<v_{jk}<\overline v_{jk}\\
+c_{jk}\leq0,
+&v_{jk}=\overline v_{jk}
+\end{cases}
+$$
+
+The GEM framework provides several commonly used condition rules:
+
+1. `UnitRevenueExpenditureBalanceConditions` pairs unit loss with the agent's activity variable, which typically represents a production activity level. It is mainly applicable to constant-returns-to-scale activities for which unit net supply can be defined.
+
+2. `TotalRevenueExpenditureBalanceConditions` pairs total loss with the agent's activity variable, which may, for example, represent a consumer's utility level.
+
+3. `MarginalUtilityConsumerConditions` constructs the KKT conditions for a consumer's utility-maximization problem using marginal utilities, commodity prices, and a budget multiplier.
+
+4. `ProductionStationarityConditions` constructs stationary production conditions from a production function and marginal product functions. A stationary point obtained from these conditions is not necessarily a cost-minimizing point.
+
+5. `CostMinimizationKKTConditions` constructs the KKT conditions for a firm's cost-minimization problem.
+
+6. `ExplicitAgentConditions` allows the user to define an agent's condition function directly when the required relationship cannot be represented by one of the existing condition rules.
+
+The GEM framework therefore supports both standard condition rules and user-defined complementarity conditions.
+
+<!-- liwu1 -->
+### Commodity Market Conditions
+
+The GEM framework maps the local net supply vectors of all economic agents into a common commodity space and then aggregates them. The total net supply of commodity $i$ is
+
+$$
+\bar s_i
+=
+\sum_{j=1}^{m}\bar s_{ij}
+$$
+
+When the lower bound of the commodity price is zero and there is no finite upper bound, the commodity market condition is
+
+$$
+0
+\leq
+\bar s_i
+\perp
+p_i
+\geq
+0
+$$
+
+If $p_i>0$, then $\bar s_i=0$, so the market for commodity $i$ clears. If $\bar s_i>0$, then $p_i=0$, so a commodity in excess supply may become a free commodity.
+
+The GEM framework also allows other lower and upper bounds to be imposed on prices. Once a numeraire commodity is selected, its price is fixed at a specified value, thereby eliminating the proportional indeterminacy of the general equilibrium price vector.
+
+<!-- liwu1 -->
+### Auxiliary Variables and Auxiliary Equations
+
+In addition to economic agent variables and commodity prices, the GEM framework allows auxiliary variables and auxiliary equations to be introduced through `AuxiliaryVariable` and `AuxiliaryEquation`.
+
+Let $q_k$ denote an auxiliary variable. A corresponding auxiliary equation may be written as
+
+$$
+g_k(\mathbf p,\mathbf v,\mathbf q)=0
+$$
+
+Auxiliary variables can be used to represent exogenous price conditions, activity-level normalization conditions, and other model-closure relationships. Economic agents may observe auxiliary variables through `AuxiliaryVariableRef`, variables of other agents through `AgentVariableRef`, and commodity prices through `PriceVariableRef`.
+
+<!-- liwu1 -->
+### Equilibrium Model and Solution
+
+After the economic agents have been constructed, they can be combined into a complete equilibrium model using `NetSupplyEquilibriumModel`. The model mainly contains the set of economic agents, the set of commodities, price bounds, the numeraire, and optional auxiliary variables and auxiliary equations.
+
+The GEM framework combines the following components into a single mixed complementarity problem:
+
+1. The local complementarity conditions of the economic agents.
+
+2. The market-clearing conditions for the commodities.
+
+3. The auxiliary equations associated with auxiliary variables.
+
+4. The lower and upper bound conditions for prices and other equilibrium variables.
+
+The model can be solved using `solve_equilibrium_model_mcp_jump`. This function constructs the mixed complementarity problem with `JuMP` and calls `PATHSolver.jl` to obtain a numerical solution.
+
+The solution is returned as an `EquilibriumResult`, which contains information such as equilibrium prices, agent variable values, agent net supplies, total net supply, auxiliary variable values, and complementarity residuals.
+
+
+::: {#lst-gem_basicExample_CD_nc2_na2}
+
+```{.julia include="code/gem_basicExample_CD_nc2_na2_v1.jl"}
+```
+
+A $2\times2$ Cobb--Douglas Equilibrium Model: The GEM Framework
+
+:::
+
+<!-- liuw1 -->
+## Total Revenue-Expenditure Balance Conditions (TREBC) and Wide-Sense Equilibrium
+
+In a strict-sense structural equilibrium model with constant returns to scale, a firm's unit loss and activity level satisfy a complementarity relation. This condition rules out the possibility that a firm remains inactive when a profitable production opportunity exists.
+
+In GEM, `TotalRevenueExpenditureBalanceConditions` constructs the relevant condition using the firm's total loss rather than its unit loss. As a result, `TotalRevenueExpenditureBalanceConditions` permits a broader notion of equilibrium: a firm with constant returns to scale may remain inactive even when a positive-profit opportunity exists.
+
+This point can be illustrated by a slight extension of the basic example. Suppose the economy contains two commodities, product and labor, with product as the numeraire commodity. There are two firms, both using Cobb--Douglas production technologies with input shares $(0.5,0.5)^\top$.
+
+Firm 1 has efficiency parameter $\alpha_1=2$, while firm 2 has efficiency parameter $\alpha_2=1$. The consumer is endowed with $\omega=100$ units of labor.
+
+If the usual unit-loss condition is used, firm 1 is more efficient. Therefore, at equilibrium, firm 1 produces while firm 2 remains inactive. This equilibrium can be regarded as a strict-sense equilibrium because no inactive firm has an unexploited positive-profit opportunity.
+
+If `TotalRevenueExpenditureBalanceConditions` is used instead, then, in addition to the strict-sense equilibrium above, there is another equilibrium:
+
+$$
+\mathbf p=\left(1,\frac14\right)^\top,\qquad
+z_1=0,\qquad
+z_2=25, \qquad
+u=25
+$$
+
+At this equilibrium, firm 1 could earn a positive profit if it entered production. However, because its activity level is zero, its total loss is also zero. `TotalRevenueExpenditureBalanceConditions` therefore allows firm 1 to remain inactive.
+
+This equilibrium satisfies the total revenue-expenditure balance conditions and the market-clearing conditions, but it does not satisfy the unit revenue-expenditure balance conditions of the strict-sense structural equilibrium model. It can therefore be called a **wide-sense equilibrium**, whereas an equilibrium satisfying the conditions of the strict-sense structural equilibrium model can be called a **strict-sense equilibrium**.
+
+Because wide-sense equilibria may involve multiple solutions and degenerate cases, the solution returned by PATH may be relatively sensitive to the initial values.
+
+For some production technologies, particularly nonconvex technologies, the firm's net supply cannot be represented naturally as an activity level multiplied by an activity-independent unit net-supply vector. In such cases, unit revenue-expenditure balance conditions may no longer provide an appropriate representation, whereas total revenue-expenditure balance conditions can be imposed directly on the firm's total revenue and total expenditure at its current activity level.
+
+
+The program for solving the wide-sense equilibrium described above is as follows.
+
+
+::: {#lst-gemb_basicExample_CD_totalRevenueExpenditureBalance_wideSense_nc2_na3}
+
+```{.julia include="code/gemb_basicExample_CD_totalRevenueExpenditureBalance_wideSense_nc2_na3_v1.jl"}
+```
+
+A $2\times3$ Cobb--Douglas Equilibrium Model: Total Revenue-Expenditure Balance Conditions
+
+:::
+
+
+
+
+## Cost-Minimization Conditions and Marginal-Utility Conditions
+
+A general equilibrium model does not have to rely only on demand functions derived in advance. The first-order conditions of firms' and consumers' optimization problems can also be incorporated directly into the equilibrium system. GEM provides `CostMinimizationKKTConditions` and `MarginalUtilityConsumerConditions` for constructing the complementarity conditions associated with firms' cost-minimization problems and consumers' utility-maximization problems, respectively. This approach does not require input demand functions or consumer demand functions to be derived beforehand, and it can naturally accommodate corner solutions in which some input or consumption quantities are zero.
+
+In GEM, `CostMinimizationKKTConditions` pairs the firm's activity level with its total loss. It therefore incorporates three types of relations: the firm's revenue-expenditure balance condition, the cost-minimization conditions for individual inputs, and the production constraint. The corresponding endogenous variables are, respectively, the activity level, the quantities of the various inputs, and the multiplier associated with the production constraint.
+
+It should be noted that KKT conditions are, in general, first-order necessary conditions for a local optimum. For cost-minimization problems with the usual appropriate convexity properties, they can characterize a cost-minimizing solution. For nonconvex production technologies, however, satisfying the KKT conditions alone does not necessarily imply that a global cost minimum has been obtained.
+
+`MarginalUtilityConsumerConditions` constructs utility-maximization conditions from consumers' marginal utilities. It does not require the demand functions to be derived in advance. Instead, the consumption quantity of each commodity is paired directly with its corresponding marginal-utility condition, while the budget multiplier is paired with the budget constraint.
+
+The following basic example uses cost-minimization conditions and marginal-utility conditions.
+
+::: {#lst-gemb_basicExample_CD_costMinimization_marginalUtility_nc2_na2}
+
+```{.julia include="code/gemb_basicExample_CD_costMinimization_marginalUtility_nc2_na2_v1.jl"}
+```
+
+A $2\times2$ Cobb--Douglas Equilibrium Model: Cost Minimization and Marginal Utility
+
+:::
+
+
+<!-- liwu1 -->
+## Production Stationarity Conditions and Explicit Agent Conditions
+
+`ProductionStationarityConditions` is used to represent a firm's production stationarity conditions for a given production technology. It incorporates the production function, marginal products, and their relationships with commodity prices directly into the equilibrium system, so that the firm's output level, input quantities, and associated production multiplier jointly satisfy the relevant first-order conditions.
+
+Unlike `CostMinimizationKKTConditions`, `ProductionStationarityConditions` does not require the firm to minimize cost conditional on a given output level. Its economic interpretation is nevertheless closely related to the underlying production technology: for each input that is actually used, its marginal contribution must be consistent with the corresponding commodity price, while actual output must be consistent with the output determined by the production function. Thus, `ProductionStationarityConditions` provides a way to construct a firm's equilibrium conditions directly from the first-order stationarity relations of its production technology. The current formulation assumes an interior solution, so the marginal-pricing conditions are imposed as equalities.
+
+`ExplicitAgentConditions` allows users to define an economic agent's equilibrium conditions directly. When existing condition rules such as `UnitRevenueExpenditureBalanceConditions`, `CostMinimizationKKTConditions`, or `MarginalUtilityConsumerConditions` cannot conveniently represent a particular economic relationship, users can supply their own condition functions and pair them with the agent's endogenous variables. `ExplicitAgentConditions` therefore provides substantial modeling flexibility and is useful for representing special behavioral constraints, institutional rules, and other nonstandard equilibrium conditions.
+
+The following basic example illustrates the use of production stationarity conditions together with explicit agent conditions.
+
+
+::: {#lst-gemb_basicExample_productionStationarity_explicitConsumer_nc2_na2}
+
+```{.julia include="code/gemb_basicExample_productionStationarity_explicitConsumer_nc2_na2_v1.jl"}
+```
+
+A $2\times2$ Cobb--Douglas Equilibrium Model: Production Stationarity Conditions and Explicit Agent Conditions
+
+:::
+
+
+<!-- liwu1 -->
+## Activity-Demand Specifications
+
+An important class of behavioral specifications in the GEMB high-level framework is the *activity-demand specification*. It applies to economic agents whose commodity demands can be expressed directly as functions of an activity level and commodity prices.
+
+For a class of homogeneous consumers represented without aggregation, the activity level may be interpreted as the number, or population, of identical consumers. This interpretation is common in strict-sense structural equilibrium models, where identical consumers need not be aggregated. In computational models, however, homogeneous consumers are usually aggregated into a representative consumer. When such a representative consumer is modeled through a utility-based demand specification, its activity level typically represents the utility level rather than the number of consumers.
+
+Let $z$ denote the activity level of an agent, $\mathbf p$ the relevant price vector, and $\mathbf x$ its commodity demand vector. An activity-demand specification can be written abstractly as
+
+$$
+\mathbf x=\mathbf d(z,\mathbf p)
+$$
+
+where $\mathbf d$ is an activity-demand function. In more general cases, the demand function may also depend on observed variables.
+
+The interpretation of the activity level depends on the type of economic agent. For a producer, the activity level usually represents its production level or production scale. For example, if a producer has constant returns to scale and requires the unit demand bundle $\mathbf a(\mathbf p)$ at prices $\mathbf p$, its demand can be written as
+
+$$
+\mathbf x=z\mathbf a(\mathbf p)
+$$
+
+where $z$ is the production activity level.
+
+The same representation can also be used for consumers. Suppose a consumer has a utility function, and let $\mathbf x^h(\mathbf p,u)$ denote its compensated demand at prices $\mathbf p$ and utility level $u$. Then
+
+$$
+\mathbf x=\mathbf x^h(\mathbf p,u)
+$$
+
+can be written in the same mathematical form as an activity-demand function. The consumer's utility level $u$ can therefore be regarded as its **activity level**. This is the same general concept of an activity level, although its economic interpretation depends on how the consumer is represented. For an unaggregated class of homogeneous consumers, the activity level may instead represent the number or population of consumers.
+
+This common representation makes it possible to treat producers and compensated-demand consumers within the same activity-demand framework. The essential distinction lies in the economic interpretation of the activity variable and in the conditions determining its equilibrium value, rather than in the mathematical form of the demand function.
+
+In `GeneralEquilibriumModeling.jl`, activity-demand specifications belong to the abstract type `AbstractActivityDemandSpec`. The general-purpose specification is `ActivityDemandSpec`, whose demand function accepts either
+
+```julia
+demand_function(activity, prices)
+```
+
+or
+
+```julia
+demand_function(activity, prices, observed_values)
+```
+
+and returns the corresponding commodity demand vector. Thus, `ActivityDemandSpec` can be used whenever conditional commodity demand is known explicitly as a function of an activity level and prices.
+
+GEMB also provides several built-in activity-demand specifications. `CESSpec` represents CES activity-demand relationships, while `DCESSpec` extends this representation to displaced CES relationships. These specifications can be used for both producers and compensated-demand consumers. `PowerProductionSpec` represents a one-input power production technology and is intended specifically for producers.
+
+When an activity-demand specification is used for a producer, the activity variable must be associated with an appropriate producer condition. For homogeneous activity-demand relationships without fixed endowments, GEMB can use unit revenue-expenditure balance conditions. For specifications involving displacement terms or fixed endowments, total revenue-expenditure balance conditions are generally more appropriate. These defaults can be overridden when an alternative condition rule is required.
+
+For a compensated-demand consumer, the construction is different. The consumer has no output commodity in the producer sense. Its net supply is obtained from its endowment minus its compensated demand, and its equilibrium utility activity is determined together with a total expenditure-income balance condition. Consequently, the activity-demand framework provides a unified way to describe two apparently different economic behaviors:
+
+* a producer chooses a production activity level and demands the commodities required to support that production level;
+* a consumer attains a utility activity level and demands the commodities required to support that utility level.
+
+This interpretation is especially useful in structural equilibrium modeling because both production and consumption can be represented through the relationship between an activity level, commodity prices, and the associated demand bundle.
+
+The function `activity_supply` is the common output-supply interface for activity-based producers in GEMB. It maps an activity level, output prices, and optionally observed equilibrium variables into the corresponding output quantities. Built-in output specifications such as `CETSpec` implement this interface automatically, while users can define new specifications by creating a subtype of `AbstractActivitySupplySpec` and extending `activity_supply`. Such a custom specification can then be supplied through the `output_spec` argument when constructing a producer. 
+
+## Custom Net-Supply Agents and Condition Agents
+
+### Custom Net-Supply Agents and Multi-Activity Producers
+
+The standard behavioral specifications in the GEMB high-level framework, such as `CESSpec`, `DCESSpec`, and `MarshallDemandConsumerSpec`, provide convenient representations for commonly used forms of economic behavior. When an agent cannot be represented naturally by one of these specifications, GEMB also allows its net-supply mapping to be defined directly through `add_net_supply_agent!`.
+
+A custom net-supply agent may have its own endogenous variables, variable bounds and starting values, observed equilibrium variables, and condition rule. Its behavior is specified directly by a net-supply function that returns positive quantities for supplies and negative quantities for demands. This provides a flexible high-level interface for economic agents whose behavior does not fit one of the standard GEMB specifications.
+
+A custom net-supply producer may also contain multiple endogenous activity levels. For example, a single firm may control an activity vector $\mathbf z=(z_1,\ldots,z_m)^\top$ representing several production processes. When `UnitRevenueExpenditureBalanceConditions` is used, one unit revenue-expenditure balance condition is constructed for each activity variable. Thus, the number of production activities need not equal the number of economic agents. By contrast, the current standard activity-demand producer specifications, including `CESSpec` and `DCESSpec`, construct one activity level for each agent.
+
+### Condition Agents
+
+A second extension mechanism is provided by `ConditionAgentSpec`. A condition agent provides the GEMB high-level representation of endogenous auxiliary variables together with the explicit conditions that determine them. It may contain one or more endogenous equilibrium variables, with one condition paired with each variable, but it does not generate commodity demand or supply. It is therefore useful for representing variables that would typically be introduced through auxiliary variable--equation pairs in the GEM framework, including closure variables, endogenous policy parameters, normalization variables, and other equilibrium variables determined by explicit conditions.
+
+### A Two-Commodity von Neumann Model with Three Activities
+
+The following von Neumann model illustrates how a custom net-supply agent and a condition agent can be used together.
+
+Consider a pure-production economy with two commodities, wheat and iron, and three production processes (Li, 2019, Example 2.3). The input and output coefficient matrices are
+
+$$
+\mathbf A=
+\begin{pmatrix}
+0.8&0.5&0.06\\
+2&2&0.4
+\end{pmatrix},
+\qquad
+\mathbf B=
+\begin{pmatrix}
+1&1&0\\
+0&0&1
+\end{pmatrix}
+$$
+
+Each column represents a production process. Processes 1 and 2 both produce wheat, whereas process 3 produces iron. Processes 1 and 2 therefore compete in wheat production. Let $\mathbf z=(z_1,z_2,z_3)^\top$ denote the activity-level vector, $\mathbf p=(p_1,p_2)^\top$ the commodity-price vector, and $\rho$ the equilibrium discount factor.
+
+Processes 1 and 2 produce the same output, one unit of wheat, and use the same amount of iron, but process 1 requires $0.8$ units of wheat as input whereas process 2 requires only $0.5$. Process 1 therefore has a higher unit cost for the same unit revenue and is technologically disadvantaged.
+
+Taking wheat as the numeraire, one equilibrium is
+
+$$
+\mathbf p^*=
+\begin{pmatrix}
+1\\
+0.15
+\end{pmatrix},
+\qquad
+\mathbf z^*=
+\begin{pmatrix}
+0\\
+100\\
+500
+\end{pmatrix},
+\qquad
+\rho^*=0.8
+$$
+
+The corresponding balanced-growth factor is $1/\rho^*=1.25$, so the equilibrium growth rate is
+
+$$
+\frac{1}{\rho^*}-1=0.25
+$$
+
+In the GEMB high-level implementation, the three production processes are represented as three activity variables of a single custom net-supply producer. Its aggregate net supply is defined as
+
+$$
+(\rho\mathbf B-\mathbf A)\mathbf z
+$$
+
+The producer is constructed with `add_net_supply_agent!` and uses `UnitRevenueExpenditureBalanceConditions`. Consequently, activity $j$ is paired with the unit excess cost
+
+$$
+\mathbf p^\top\mathbf A_{\cdot j}
+-
+\rho\mathbf p^\top\mathbf B_{\cdot j}
+$$
+
+A positive activity level therefore requires the corresponding unit excess cost to be zero, whereas a production process with a positive unit excess cost may remain inactive.
+
+The equilibrium discount factor $\rho$ is represented as the endogenous variable of a `ConditionAgentSpec`. Since the von Neumann activity vector is homogeneous, its scale is fixed by the normalization
+
+$$
+z_1+z_2+z_3=600
+$$
+
+which is used as the condition paired with $\rho$. Together with the price normalization $p_1=1$, the model simultaneously determines the relative commodity price, the three activity levels, and the equilibrium discount factor.
+
+Thus, this example demonstrates two complementary extensions of the GEMB high-level framework: `add_net_supply_agent!` allows the direct construction of a multi-activity producer, while `ConditionAgentSpec` represents an endogenous auxiliary variable and the explicit condition that determines it.
+
+
+::: {#lst-gemb_vonNeumann_multiActivityFirm_nc2_na1}
+
+```{.julia include="code/gemb_vonNeumann_multiActivityFirm_nc2_na1_v2.jl"}
+```
+A Two-Commodity Von Neumann Equilibrium Model with Three Activities
+
+:::
+
+<!-- liwu2 -->
+## Equilibrium Results and Statistics
+
+After a GEMB model has been constructed, it can normally be solved directly by
+
+```julia
+result = GEMB.solve(model)
+```
+
+The resulting object contains the equilibrium solution and solver information. For economic analysis, GEMB also provides post-solve functions that organize the solution into prices, activity levels, demand and supply matrices, and related value statistics.
+
+### Equilibrium Statistics
+
+General equilibrium statistics can be obtained by
+
+```julia
+stats = GEMB.equilibrium_statistics(model, result)
+```
+
+The equilibrium price vector is stored in `stats.prices`. Explicitly represented activity levels are collected in `stats.activity_levels`, while `stats.activity_level_refs` identifies the corresponding agents. The economic interpretation of an activity level depends on the representation of the agent. For example, it may represent a production activity level or a consumer's utility level. A multi-activity agent may therefore contribute several entries to `activity_levels`, whereas an agent without an explicitly represented activity level contributes none.
+
+GEMB represents each economic agent internally through its net supply. Let there be $n$ commodities and $m$ agents, and let the demand and supply matrices be
+
+$$
+\mathbf D=[d_{ij}]
+\qquad\text{and}\qquad
+\mathbf S=[s_{ij}]
+$$
+
+where rows correspond to commodities and columns correspond to agents. The net-supply matrix is defined as
+
+$$
+\bar{\mathbf S}
+=
+\mathbf S-\mathbf D
+$$
+
+Thus, $\bar s_{ij}>0$ means that agent $j$ is a net supplier of commodity $i$, while $\bar s_{ij}<0$ means that the agent is a net demander of that commodity. The total net supply of each commodity is
+
+$$
+\bar{\mathbf S}\mathbf 1
+=
+\mathbf S\mathbf 1-\mathbf D\mathbf 1
+$$
+
+The corresponding information is available from `stats.net_supply_matrix` and `stats.total_net_supply`.
+
+The net-supply value matrix at the equilibrium price vector $\mathbf p$ is
+
+$$
+\bar{\mathbf S}_v
+=
+\operatorname{Diag}(\mathbf p)\bar{\mathbf S}
+$$
+
+and is available from `stats.net_supply_value_matrix`. Summing this matrix over commodities gives the net-supply value of each agent,
+
+$$
+\bar{\mathbf S}^{\mathsf T}\mathbf p
+$$
+
+which is stored in `stats.agent_net_supply_values`. For an agent satisfying a revenue-expenditure balance condition, this value should be zero up to numerical error.
+
+### Demand and Supply Matrices
+
+For models consisting of agents with activity-demand specifications, the demand and supply components can be obtained separately by
+
+```julia
+flows = GEMB.demand_supply_matrices(model, result)
+```
+
+The main matrices are
+
+```julia
+D = flows.demand
+S = flows.supply
+Sbar = flows.net_supply
+
+DV = flows.demand_value
+SV = flows.supply_value
+```
+
+where `D`, `S`, and `Sbar` correspond respectively to $\mathbf D$, $\mathbf S$, and $\bar{\mathbf S}$. Hence,
+
+```julia
+S - D ≈ Sbar
+```
+
+up to numerical error.
+
+The total demand and supply vectors are
+
+$$
+\mathbf d
+=
+\mathbf D\mathbf 1
+\qquad\text{and}\qquad
+\mathbf s
+=
+\mathbf S\mathbf 1
+$$
+
+and are available as `flows.total_demand` and `flows.total_supply`. Their relationship reflects the commodity-market conditions imposed in the model. In an equality-form equilibrium model,
+
+$$
+\mathbf D\mathbf 1
+=
+\mathbf S\mathbf 1
+$$
+
+whereas a model allowing free disposal or other inequality-form market conditions may permit positive total net supply for some commodities.
+
+GEMB also reports demand and supply in value terms. Define
+
+$$
+\mathbf{DV}
+=
+\operatorname{Diag}(\mathbf p)\mathbf D
+$$
+
+and
+
+$$
+\mathbf{SV}
+=
+\operatorname{Diag}(\mathbf p)\mathbf S
+$$
+
+The element $DV_{ij}$ is agent $j$'s expenditure on commodity $i$, while $SV_{ij}$ is the revenue associated with its supply of that commodity. Consequently, the expenditure and revenue vectors of the agents are
+
+$$
+\mathbf e
+=
+\mathbf D^{\mathsf T}\mathbf p
+$$
+
+and
+
+$$
+\mathbf r
+=
+\mathbf S^{\mathsf T}\mathbf p
+$$
+
+These quantities are available as `flows.agent_expenditure` and `flows.agent_revenue`. Their difference satisfies
+
+$$
+\mathbf r-\mathbf e
+=
+\bar{\mathbf S}^{\mathsf T}\mathbf p
+$$
+
+Thus, the quantity matrices and value matrices provide two complementary views of an equilibrium: the former describe the physical allocation of commodities, while the latter describe the corresponding revenue and expenditure flows.
+
+### Printing and Checking an Equilibrium
+
+For routine inspection, GEMB provides
+
+```julia
+GEMB.print_equilibrium_statistics(model, result)
+```
+
+which prints a compact summary of equilibrium prices, activity levels, net supplies, net-supply values, and aggregate net supplies. Numerical values close to zero can be suppressed in the display by specifying `display_tol`, and the number of significant digits can be controlled by `sigdigits`.
+
+A typical post-solve workflow is therefore
+
+```julia
+result = GEMB.solve(model)
+
+stats = GEMB.equilibrium_statistics(model, result)
+flows = GEMB.demand_supply_matrices(model, result)
+
+D = flows.demand
+S = flows.supply
+Sbar = flows.net_supply
+
+DV = flows.demand_value
+SV = flows.supply_value
+
+@assert S - D ≈ Sbar
+
+GEMB.print_equilibrium_statistics(model, result)
+```
+
+For an equality-form model in which all agents satisfy revenue-expenditure balance, two additional numerical checks are
+
+```julia
+@assert flows.total_demand ≈ flows.total_supply
+@assert flows.agent_expenditure ≈ flows.agent_revenue
+```
+
+These checks help distinguish the economic interpretation of an equilibrium from the numerical solution process. `solve` determines an equilibrium of the underlying mixed complementarity problem, while the statistics functions reorganize the resulting variables into economically meaningful quantities and provide convenient consistency checks. 

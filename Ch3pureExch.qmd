@@ -1,0 +1,834 @@
+# Static Pure-Exchange Equilibrium
+
+## CES and DCES Consumers: A $2\times2$ Pure-Exchange Model
+
+<!-- liwu1 -->
+### CES and DCES Specifications
+
+CES and displaced CES functions are two built-in function families in the GEMB high-level framework. They are represented by `CESSpec` and `DCESSpec`, respectively. Both are activity-demand specifications: given an activity level and the prices of demanded commodities, GEMB computes the corresponding conditional demand vector. For a producer, the activity level represents output or production scale; for a consumer, it can represent utility.
+
+A CES specification is constructed by
+
+```julia
+GEMB.CESSpec(
+    beta;
+    es=1.0,
+    alpha=1.0,
+)
+```
+
+where `beta` is the vector of distribution parameters, `es` is the elasticity of substitution, and `alpha` is the scale parameter. Let $\boldsymbol{\beta}=(\beta_1,\ldots,\beta_n)^\top$, $e_s$ denote `es`, and $\alpha>0$. For $e_s\ne0,1$, the corresponding CES function takes the form
+
+$$
+f(\mathbf x)
+=
+\alpha
+\left[
+\sum_{i=1}^n
+\beta_i x_i^{(e_s-1)/e_s}
+\right]^{e_s/(e_s-1)}
+$$
+
+The parameter `es` directly represents the elasticity of substitution. When `es=1`, GEMB uses the Cobb--Douglas limit and requires $\sum_i\beta_i=1$. When `es=0`, it uses the Leontief limit. Hence a single `CESSpec` interface covers the Leontief, Cobb--Douglas, and ordinary CES cases.
+
+For example,
+
+```julia
+spec = GEMB.CESSpec(
+    [0.4, 0.6];
+    es=1.0,
+    alpha=1.0,
+)
+```
+
+defines a two-commodity Cobb--Douglas specification. Changing only `es` changes the degree of substitution without changing the general model-building interface.
+
+If the activity level is $z$ and the relevant price vector is $\mathbf p$, GEMB evaluates the conditional demand as
+
+```julia
+GEMB.activity_demand(spec, z, p)
+```
+
+For $e_s\ne0,1$, its $i$th component is
+
+$$
+x_i
+=
+\frac{z}{\alpha}
+\beta_i^{e_s} p_i^{-e_s}
+\left(
+\sum_{j=1}^n
+\beta_j^{e_s} p_j^{1-e_s}
+\right)^{e_s/(1-e_s)}
+$$
+
+When `CESSpec` is used for a consumer, the same conditional-demand relation is interpreted as compensated demand, with the activity level representing utility. 
+
+`DCESSpec` extends this construction by introducing a displacement vector (Fullerton, 1989). It is constructed by
+
+```julia
+GEMB.DCESSpec(
+    beta;
+    es=1.0,
+    alpha=1.0,
+    xi=zeros(length(beta)),
+)
+```
+
+where `xi` is the displacement vector $\boldsymbol{\xi}=(\xi_1,\ldots,\xi_n)^\top$. 
+For $e_s>0$ and $e_s\ne1$, the DCES function is parameterized as
+
+$$
+f(\mathbf x)
+=
+\alpha
+\left[
+\sum_{i=1}^n
+\beta_i^{1/e_s}
+(x_i-\xi_i)^{(e_s-1)/e_s}
+\right]^{e_s/(e_s-1)}
+$$
+
+When $e_s\to0$, the DCES function converges to the displaced Leontief form
+
+$$
+f(\mathbf x)
+=
+\alpha
+\min_{i:\beta_i>0}
+\left\{
+\frac{x_i-\xi_i}{\beta_i}
+\right\}
+$$
+
+When $e_s=1$, the corresponding Cobb--Douglas limit is used. 
+
+The displacement parameters shift the quantities entering the CES aggregator. The conditional demand consequently has the form
+$$
+\mathbf x
+=
+\boldsymbol{\xi}
++
+\frac{z}{\alpha}\mathbf a(\mathbf p)
+$$
+
+where $\mathbf a(\mathbf p)$ is the price-dependent unit demand vector. In particular, for $e_s\ne1$,
+
+$$
+x_i
+=
+\xi_i
++
+\frac{z}{\alpha}
+\beta_i p_i^{-e_s}
+\left(
+\sum_{j=1}^n
+\beta_jp_j^{1-e_s}
+\right)^{e_s/(1-e_s)}
+$$
+
+`CESSpec` and `DCESSpec` use different parameterizations of the CES coefficients. Consequently, setting `xi=zeros(...)` in a `DCESSpec` produces a homogeneous CES-family specification, but it should not in general be interpreted as numerically identical to a `CESSpec` constructed with the same values of `beta` and `alpha`. The two specifications should therefore be regarded as related built-in parameterizations rather than as interchangeable constructors.
+
+When these specifications are passed to `GEMB.add_agent!`, GEMB combines the demand specification with the agent's outputs, endowments, claims, and equilibrium conditions. For a `CESSpec` producer without fixed endowments, the default condition is `UnitRevenueExpenditureBalanceConditions`. A producer with fixed endowments instead uses `TotalRevenueExpenditureBalanceConditions`. For `DCESSpec`, a producer with a nonzero displacement parameter also uses `TotalRevenueExpenditureBalanceConditions`, since its net supply is no longer proportional to the activity level. These defaults can be replaced by explicitly supplying another condition rule.
+
+Claims are not part of the CES or DCES function itself. If an ad valorem claim is required, it is attached separately when the agent is constructed through arguments such as `claim` and `claim_rate`. This separation allows the same CES or DCES behavioral specification to be reused under different institutional arrangements.
+
+### A $2\times2$ Pure-Exchange Model
+
+The following pure-exchange model illustrates how `CESSpec` and `DCESSpec` can be used simultaneously for different consumers. Assume the following:
+
+1. The economy contains two commodities and two consumers. Commodity 2 is taken as the numeraire commodity.
+
+2. Consumer 1 is endowed with $\omega_1>0$ units of commodity 1 and no commodity 2. The consumer has a CES specification with `beta=[beta, 1-beta]`, `es=1`, and `alpha=1`, where $0<\beta<1$. Thus, the CES specification reduces to the Cobb--Douglas case.
+
+3. Consumer 2 is endowed with $\omega_2>0$ units of commodity 2 and no commodity 1. The consumer has a DCES specification with the same `beta`, `es`, and `alpha`, but with displacement vector $\boldsymbol{\xi}=(0,\xi)^\top$, where $0\leq\xi<\omega_2$.
+
+Let the price vector be $\mathbf p=(p,1)^\top$. The demand and supply matrices are
+
+$$
+\mathbf D(p)
+=
+\begin{bmatrix}
+\beta\omega_1 &
+\frac{\beta(\omega_2-\xi)}{p}
+\\
+(1-\beta)p\omega_1 &
+\xi+(1-\beta)(\omega_2-\xi)
+\end{bmatrix}
+$$
+
+and
+
+$$
+\mathbf S
+=
+\begin{bmatrix}
+\omega_1&0\\
+0&\omega_2
+\end{bmatrix}
+$$
+
+where rows represent commodities and columns represent consumers.
+
+The equality-form wide-sense structural equilibrium model requires the revenue-expenditure balance condition
+
+$$
+\mathbf p^\top\mathbf D(p)
+=
+\mathbf p^\top\mathbf S
+$$
+
+and the supply-demand balance condition
+
+$$
+\mathbf D(p)\mathbf 1
+=
+\mathbf S\mathbf 1
+$$
+
+The equilibrium price vector is
+
+$$
+\mathbf p^*
+=
+\left(
+\frac{\beta(\omega_2-\xi)}
+{(1-\beta)\omega_1},
+1
+\right)^\top
+$$
+
+The equilibrium demand matrix is
+
+$$
+\mathbf D^*
+=
+\begin{bmatrix}
+\beta\omega_1&(1-\beta)\omega_1\\
+\beta(\omega_2-\xi)&
+\xi+(1-\beta)(\omega_2-\xi)
+\end{bmatrix}
+$$
+
+For example, let $\beta=0.5$, $\omega_1=\omega_2=100$, and $\xi=20$. Then
+
+$$
+\mathbf p^*=(0.8,1)^\top
+$$
+
+and
+
+$$
+\mathbf D^*
+=
+\begin{bmatrix}
+50&50\\
+40&60
+\end{bmatrix},
+\qquad
+\mathbf S
+=
+\begin{bmatrix}
+100&0\\
+0&100
+\end{bmatrix}
+$$
+
+The first consumer therefore consumes $(50,40)^\top$, while the second consumes $(50,60)^\top$. The 20-unit displacement in commodity 2 directly illustrates how `DCESSpec` differs from an ordinary `CESSpec`.
+
+The corresponding GEMB implementation is given in @lst-gemb_pureExchange_CES_DCES.
+
+::: {#lst-gemb_pureExchange_CES_DCES}
+
+```{.julia include="code/gemb_pureExchange_CES_DCES_nc2_na2_v1.jl"}
+```
+
+CES and DCES Consumers: A $2\times2$ Pure-Exchange Model
+
+:::
+
+## Marshallian-Demand Consumers: A $2\times2$ Pure-Exchange Model
+
+When a consumer's Marshallian demand is available explicitly as a function of income and prices, GEMB allows the demand function to be supplied directly through `MarshallDemandConsumerSpec`. This avoids introducing a utility function, marginal-utility conditions, or a utility activity variable.
+
+A Marshallian-demand specification is constructed as
+
+```julia
+GEMB.MarshallDemandConsumerSpec(demand_function)
+```
+
+where `demand_function` takes income and the relevant commodity prices as arguments and returns a demand vector. A typical function has the form
+
+```julia
+demand_function = (income, prices) -> begin
+    # compute demands
+    [...]
+end
+```
+
+GEMB computes the consumer's income from the value of its endowments and then evaluates this demand function at the current prices. Thus, `MarshallDemandConsumerSpec` is particularly convenient when the demand system itself, rather than the underlying utility maximization problem, is the natural starting point of the model.
+
+Unlike an activity-demand consumer, a consumer constructed from `MarshallDemandConsumerSpec` does not require an endogenous utility or activity variable. Its income is determined from its endowments at the current prices, and its commodity demands are then obtained directly from the supplied Marshallian-demand function. The consumer is therefore incorporated into the equilibrium system through its resulting net supply, while equilibrium prices are determined jointly by the commodity-market conditions.
+
+This interface is useful not only for demands derived analytically from standard utility functions, but also whenever a Marshallian demand system has already been obtained independently and the researcher wishes to use that demand system directly in a general equilibrium model.
+
+Consider the following pure-exchange economy:
+
+1. The economy contains two commodities and two consumers. Commodity 2 is taken as the numeraire commodity.
+
+2. Consumer 1 is endowed with $\omega_1>0$ units of commodity 1 and no commodity 2, while consumer 2 is endowed with $\omega_2>0$ units of commodity 2 and no commodity 1.
+
+3. Consumer $i$ allocates a share $\beta_i$ of income to commodity 1 and the remaining share $1-\beta_i$ to commodity 2, where $0<\beta_i<1$. Its Marshallian demand is therefore
+
+   $$
+   \mathbf x_i(w_i,\mathbf p)
+   =
+   \left(
+   \frac{\beta_iw_i}{p_1},
+   \frac{(1-\beta_i)w_i}{p_2}
+   \right)^\top
+   $$
+
+Let the price vector be $\mathbf p=(p,1)^\top$. The incomes of the two consumers are $w_1=p\omega_1$ and $w_2=\omega_2$, respectively. 
+Hence the demand and supply matrices are
+
+$$
+\mathbf D(p)
+=
+\begin{bmatrix}
+\beta_1\omega_1&
+\frac{\beta_2\omega_2}{p}\\
+(1-\beta_1)p\omega_1&
+(1-\beta_2)\omega_2
+\end{bmatrix}
+$$
+
+and
+
+$$
+\mathbf S
+=
+\begin{bmatrix}
+\omega_1&0\\
+0&\omega_2
+\end{bmatrix}
+$$
+
+By solving the equality-form wide-sense structural equilibrium model, the equilibrium price vector is
+
+$$
+\mathbf p^*
+=
+\left(
+\frac{\beta_2\omega_2}
+{(1-\beta_1)\omega_1},
+1
+\right)^\top
+$$
+
+For a numerical example, let $\beta_1=0.5$, $\beta_2=0.25$, and $\omega_1=\omega_2=100$. The equilibrium is then
+
+$$
+\mathbf p^*=(0.5,1)^\top
+$$
+
+and the equilibrium demand and supply matrices are
+
+$$
+\mathbf D^*
+=
+\begin{bmatrix}
+50&50\\
+25&75
+\end{bmatrix},
+\qquad
+\mathbf S
+=
+\begin{bmatrix}
+100&0\\
+0&100
+\end{bmatrix}
+$$
+
+The corresponding GEMB implementation is given in @lst-gemb_pureExchange_MarshallDemand.
+
+::: {#lst-gemb_pureExchange_MarshallDemand}
+
+```{.julia include="code/gemb_pureExchange_MarshallDemand_nc2_na2_v1.jl"}
+```
+
+Marshallian-Demand Consumers: A $2\times2$ Pure-Exchange Model
+
+:::
+
+<!-- liwu2 -->
+## Multiple Equilibria: A $2\times2$ Model
+
+The example in this section (Mas-Colell, Whinston, Green, 1995, Exercise 15.B.6) illustrates the possibility of multiple equilibria: even with smooth, strictly monotone, and strictly convex CES preferences, a general equilibrium need not be unique.
+
+Consider a pure exchange economy. Let $k=12/37$, and assume the following:
+
+1. The economy contains two commodities and two consumers.
+
+2. Consumer 1 has the utility function $u_1(\mathbf x)=(x_1^{-2}+k^3x_2^{-2})^{-1/2}$ and is endowed with one unit of commodity 1.
+
+3. Consumer 2 has the utility function $u_2(\mathbf x)=(k^3x_1^{-2}+x_2^{-2})^{-1/2}$ and is endowed with one unit of commodity 2.
+
+Let the price vector be $\mathbf p=(p_1,p_2)^\top$, and define
+
+$$
+t=\left(\frac{p_1}{p_2}\right)^{1/3}
+$$
+
+The incomes of consumers 1 and 2 are $w_1=p_1$ and $w_2=p_2$, respectively. Utility maximization yields the following demand and supply matrices:
+
+$$
+\mathbf D(t)=
+\begin{bmatrix}
+\frac{t^2}{t^2+k} & \frac{k}{t(kt^2+1)}\\
+\frac{kt^3}{t^2+k} & \frac{1}{kt^2+1}
+\end{bmatrix},
+\qquad
+\mathbf S=
+\begin{bmatrix}
+1&0\\
+0&1
+\end{bmatrix}
+$$
+
+Using the following equality-form wide-sense structural equilibrium model,
+
+$$
+\mathbf p^\top\mathbf D(t)=\mathbf p^\top\mathbf S
+$$
+
+$$
+\mathbf D(t)\mathbf 1=\mathbf S\mathbf 1
+$$
+
+we obtain
+
+$$
+(t-1)[kt^2+(k-1)t+k]=0
+$$
+
+Substituting $k=12/37$ yields
+
+$$
+(t-1)(4t-3)(3t-4)=0
+$$
+
+and hence
+
+$$
+t=\frac{3}{4},\quad 1,\quad \frac{4}{3}
+$$
+
+Since
+
+$$
+\frac{p_1}{p_2}=t^3
+$$
+
+the three equilibrium relative prices are
+
+$$
+\frac{27}{64},\quad 1,\quad \frac{64}{27}
+$$
+
+Taking commodity 2 as the numeraire, so that $p_2=1$, the three equilibrium price vectors are
+
+$$
+\mathbf p^{(1)}=\left(\frac{27}{64},1\right)^\top,\qquad
+\mathbf p^{(2)}=(1,1)^\top,\qquad
+\mathbf p^{(3)}=\left(\frac{64}{27},1\right)^\top
+$$
+
+The corresponding equilibrium demand matrices are
+
+$$
+\mathbf D^{(1)}
+=
+\begin{bmatrix}
+\frac{111}{175} & \frac{64}{175}\\
+\frac{27}{175} & \frac{148}{175}
+\end{bmatrix},
+\qquad
+\mathbf D^{(2)}
+=
+\begin{bmatrix}
+\frac{37}{49} & \frac{12}{49}\\
+\frac{12}{49} & \frac{37}{49}
+\end{bmatrix},
+\qquad
+\mathbf D^{(3)}
+=
+\begin{bmatrix}
+\frac{148}{175} & \frac{27}{175}\\
+\frac{64}{175} & \frac{111}{175}
+\end{bmatrix}
+$$
+
+For $k=12/37$, this multiplicity takes a particularly simple form: the market-equilibrium equation has exactly three positive solutions for the relative price.
+
+
+
+::: {#lst-gemb_pureExchange_MWG15B6_nc2_na2}
+
+```{.julia include="code/gemb_pureExchange_MWG15B6_nc2_na2_v1.jl"}
+```
+
+A $2\times2$ Equilibrium Model: Multiple Equilibria
+
+:::
+
+## Money Illusion and Absolute-Price-Dependent Utility: A $2\times2$ Model
+
+In standard consumer theory, preferences are defined independently of prices. Accordingly, demand functions are homogeneous of degree zero in prices and income: if all prices and income are multiplied by the same positive factor, optimal demand remains unchanged. In this sense, only relative prices matter, and the absolute price level has no effect on the equilibrium allocation. A violation of this property may be interpreted as **money illusion**.
+
+Consider the following absolute-price-dependent utility function:
+
+$$
+u(\mathbf x;p_1)=(x_1-2p_1)x_2
+$$
+
+Price-dependent preferences have also been studied in the literature (see Pollak, 1977). Restrict attention to positive prices and positive income. If all income is spent, the corresponding demand function is
+
+$$
+\mathbf x(\mathbf p,w)=
+\begin{cases}
+\left(\frac{w}{2p_1}+p_1,\ \frac{w}{2p_2}-\frac{p_1^2}{p_2}\right)^\top,
+& w>2p_1^2\\[0.8em]
+\left(\frac{w}{p_1},\ 0\right)^\top,
+& w\leq2p_1^2
+\end{cases}
+$$
+
+For example, when $\lambda>1$ and $w>2\lambda p_1^2$, the first commodity demand satisfies $x_1(\lambda\mathbf p,\lambda w)=w/(2p_1)+\lambda p_1\neq x_1(\mathbf p,w)$. Hence the demand function is not homogeneous of degree zero in prices and income. The absolute price level therefore affects consumer demand.
+
+Now consider a pure-exchange economy with two commodities and two consumers. The supply matrix is
+
+$$
+\mathbf S=
+\begin{pmatrix}
+s_1&0\\
+0&s_2
+\end{pmatrix},
+\qquad s_1,s_2>0
+$$
+
+Consumer 1 owns commodity 1 and has utility function $u_1=x_{21}$, so the consumer demands only commodity 2. Consumer 2 owns commodity 2 and has the absolute-price-dependent utility function introduced above. Let $\mathbf p=(p_1,p_2)^\top$, let $u_1$ denote consumer 1's utility level, and let $w_2$ denote consumer 2's income. Restrict attention to the interior case $w_2>2p_1^2$. The demand matrix is then
+
+$$
+\mathbf D(\mathbf p,u_1,w_2)=
+\begin{pmatrix}
+0&\frac{w_2}{2p_1}+p_1\\
+u_1&\frac{w_2}{2p_2}-\frac{p_1^2}{p_2}
+\end{pmatrix}
+$$
+
+The equality-form wide-sense structural equilibrium model requires each consumer's revenue and expenditure to balance and each commodity market to clear. Because consumer 2's demand depends on the absolute value of $p_1$, the equilibrium price vector cannot in general be rescaled without changing the allocation. Thus, unlike a standard Walrasian model, fixing one price here is not merely an economically neutral normalization.
+
+Let $p_1^*=q$ and regard $q$ as a given absolute price. The remaining endogenous variables are $p_2$, $u_1$, and $w_2$. Consumer 1's revenue-expenditure balance condition is $p_2u_1=p_1s_1$, while consumer 2's condition is $w_2=p_2s_2$. Commodity 2 market clearing requires
+
+$$
+u_1+\frac{w_2}{2p_2}-\frac{p_1^2}{p_2}=s_2
+$$
+
+Solving these three conditions for a given $q$ yields
+
+$$
+\mathbf p^*(q)
+=
+\left(
+q,\frac{2q(s_1-q)}{s_2}
+\right)^\top,
+\qquad
+u_1^*(q)=\frac{s_1s_2}{2(s_1-q)},
+\qquad
+w_2^*(q)=2q(s_1-q)
+$$
+
+The interior-solution condition $w_2^*>2(p_1^*)^2$ implies $0<q<s_1/2$. Over this interval, $0<p_2^*<s_1^2/(2s_2)$. Hence the model possesses a continuum of equilibria indexed by the absolute price $q$. These equilibria are economically distinct rather than proportional representations of the same relative-price equilibrium.
+
+The model can be calculated directly with the GEMB high-level framework using `MarshallDemandConsumerSpec`. For a selected value of $q$, the program fixes the absolute price $p_1=q$ by setting `numeraire=:commodity1` and `numeraire_value=q`. Because consumer 2's demand depends on the absolute value of $p_1$, this operation should be interpreted as fixing an absolute price rather than as a simple price normalization.
+
+
+For consumer 1, GEMB automatically calculates income from the value of the endowment, $w_1=p_1s_1$, and the Marshall demand for commodity 2 is $x_{21}=w_1/p_2$. Hence consumer 1's utility is obtained directly as $u_1=x_{21}$. For consumer 2, GEMB similarly calculates income as $w_2=p_2s_2$ and passes this income together with the current prices to the user-defined Marshall demand function
+
+$$
+\mathbf x_2(\mathbf p,w_2)
+=
+\left(
+\frac{w_2}{2p_1}+p_1,
+\frac{w_2}{2p_2}-\frac{p_1^2}{p_2}
+\right)^\top
+$$
+
+Thus, neither $u_1$ nor $w_2$ needs to be introduced as an additional endogenous agent variable. Given $p_1=q$, GEMB constructs the consumers' net supplies from their endowments and Marshall demands and determines the remaining price $p_2$ from market clearing.
+
+The program below takes $s_1=s_2=4$ and solves the model for two different absolute prices. When $p_1=q=1$, the analytical solution is $\mathbf p^*=(1,1.5)^\top$, $u_1^*=8/3$, and $w_2^*=6$. When $p_1=q=1.5$, the analytical solution becomes $\mathbf p^*=(1.5,1.875)^\top$, $u_1^*=3.2$, and $w_2^*=7.5$. Both values satisfy the interior-solution condition $0<q<s_1/2$. The resulting changes in $p_2$, $u_1$, and $w_2$ demonstrate that changing the absolute value of $p_1$ selects economically different equilibria rather than merely rescaling the same equilibrium price vector.
+
+
+::: {#lst-gemb_moneyIllusion_absolutePriceUtility_nc2_na2}
+
+```{.julia include="code/gemb_moneyIllusion_absolutePriceUtility_nc2_na2_v1.jl"}
+```
+
+A $2\times2$ Pure-Exchange Equilibrium with Absolute-Price-Dependent Utility
+
+:::
+
+## Relative-Price-Dependent Utility: A $2\times2$ Model
+
+Consider the utility function
+
+$$
+u(\mathbf x;\mathbf p)
+=
+x_1^{\frac{p_1^2}{p_1^2+p_2^2}}
+x_2^{\frac{p_2^2}{p_1^2+p_2^2}}
+$$
+
+This function has the form of a Cobb--Douglas utility function, but its expenditure shares depend on the relative price $p_1/p_2$. It is therefore a **relative-price-dependent utility function**. As the relative price of commodity 1 rises, the consumer assigns a larger weight to commodity 1.
+
+Relative-price-dependent preferences can be used to represent several types of price-dependent behavior (see Pollak, 1977). For example, consumers may use prices as signals of commodity quality, a higher relative price may increase the attractiveness of a commodity through conspicuous consumption, or price movements may affect speculative demand.
+
+Unlike the absolute-price-dependent utility function considered in the previous section, this utility function is unchanged when all prices are multiplied by the same positive factor. The preference therefore depends on relative rather than absolute prices. The associated Marshall demand is also homogeneous of degree zero in prices and income.
+
+Consider a pure-exchange economy with two commodities and two consumers. Commodity 2 is the numeraire. The supply matrix is
+
+$$
+\mathbf S=
+\begin{pmatrix}
+s_1&0\\
+0&s_2
+\end{pmatrix},
+\qquad s_1,s_2>0
+$$
+
+Consumer 1 owns $s_1$ units of commodity 1 and has utility function $u_1=x_{21}$, so this consumer demands only commodity 2. Consumer 2 owns $s_2$ units of commodity 2 and has the relative-price-dependent utility function introduced above.
+
+Let $\mathbf p=(p_1,1)^\top$. Consumer 1's income is $p_1s_1$, so its demand for commodity 2, and hence its utility level, is $u_1=p_1s_1$. Consumer 2's income is $w_2=s_2$, and its Marshall demands are $x_{12}=p_1w_2/(p_1^2+1)$ and $x_{22}=w_2/(p_1^2+1)$. The demand matrix can therefore be written as
+
+$$
+\mathbf D(\mathbf p,u_1,w_2)=
+\begin{pmatrix}
+0&\frac{p_1w_2}{p_1^2+1}\\
+u_1&\frac{w_2}{p_1^2+1}
+\end{pmatrix}
+$$
+
+For the equality-form wide-sense structural equilibrium model, market clearing for commodity 1 requires $p_1s_2/(p_1^2+1)=s_1$. Equivalently,
+
+$$
+s_1p_1^2-s_2p_1+s_1=0
+$$
+
+Hence the positive equilibrium prices are
+
+$$
+\mathbf p^*
+=
+\left(
+\frac{s_2\pm\sqrt{s_2^2-4s_1^2}}{2s_1},
+1
+\right)^\top
+$$
+
+with $w_2^*=s_2$ and $u_1^*=p_1^*s_1$.
+
+The number of positive equilibria depends on the relative magnitudes of the two supplies. If $s_2>2s_1$, there are two positive equilibrium values of $p_1$, and their product is one, so they are reciprocals. If $s_2=2s_1$, there is a unique positive equilibrium with $p_1^*=1$. If $s_2<2s_1$, no positive price can clear both markets.
+
+This result can also be seen directly from consumer 2's demand for commodity 1, $x_{12}=p_1s_2/(p_1^2+1)$. As a function of $p_1$, this demand first rises and then falls, reaching its maximum value $s_2/2$ at $p_1=1$. Hence commodity 1 can be fully absorbed only if $s_1\leq s_2/2$, or equivalently $s_2\geq2s_1$. When the inequality is strict, the horizontal supply level $s_1$ intersects this nonmonotonic demand function twice, producing two positive equilibrium prices.
+
+The model can be calculated directly with the GEMB high-level framework using `MarshallDemandConsumerSpec`. Since commodity 2 is the numeraire, the program sets `numeraire=:commodity2` and `numeraire_value=1.0`. GEMB automatically computes consumer 1's income from its endowment and price and then evaluates its Marshall demand for commodity 2. For consumer 2, GEMB similarly calculates $w_2=p_2s_2=s_2$ and passes this income together with the current prices to the user-defined Marshall demand function. No additional income or utility variables need to be introduced.
+
+An especially useful feature of this example is that the same GEMB model may have more than one positive equilibrium. For example, let $s_1=1$ and $s_2=3$. The two analytical equilibrium prices of commodity 1 are
+
+$$
+p_{1L}^*=\frac{3-\sqrt5}{2}\approx0.381966,
+\qquad
+p_{1H}^*=\frac{3+\sqrt5}{2}\approx2.618034
+$$
+
+The corresponding utility levels of consumer 1 are $u_{1L}^*\approx0.381966$ and $u_{1H}^*\approx2.618034$, while consumer 2's income is $w_2^*=3$ in both equilibria. The corresponding demand matrices are approximately
+
+$$
+\mathbf D_L^*=
+\begin{pmatrix}
+0&1\\
+0.381966&2.618034
+\end{pmatrix},
+\qquad
+\mathbf D_H^*=
+\begin{pmatrix}
+0&1\\
+2.618034&0.381966
+\end{pmatrix}
+$$
+
+Thus, the two equilibrium prices are not merely alternative numerical representations of the same allocation. They support two different equilibrium allocations. In numerical computation, the two equilibria can be obtained by solving the same GEMB model with initial price vectors chosen near the lower-price and higher-price branches, respectively. This also provides a simple example of how the initial value supplied to a nonlinear equilibrium solver can determine which member of a multiple-equilibrium set is obtained.
+
+If the equality-form wide-sense structural equilibrium model is replaced by the corresponding mixed-form wide-sense structural equilibrium model, an additional boundary equilibrium is possible:
+
+$$
+\mathbf p^*=(0,1)^\top,\qquad
+u_1^*=0,\qquad
+w_2^*=s_2
+$$
+
+At this equilibrium, both commodities satisfy the supply-demand balance conditions. For commodity 1, supply exceeds demand, but its equilibrium price is zero, so the supply-demand balance condition is satisfied through complementarity between the zero price and excess supply. For commodity 2, supply equals demand. Thus, the two commodity markets are both in supply-demand balance, although supply and demand are not equal for commodity 1. This boundary solution belongs to the mixed-form wide-sense structural equilibrium model rather than to the positive-price equality-form equilibrium considered above.
+
+::: {#lst-gemb_relativePriceDependentUtility_multipleEquilibria_nc2_na2}
+
+```{.julia include="code/gemb_relativePriceDependentUtility_multipleEquilibria_nc2_na2_v1.jl"}
+```
+A $2\times2$ Pure-Exchange Model with Relative-Price-Dependent Utility and Multiple Equilibria
+
+:::
+
+
+<!-- liwu2 -->
+## Asset-Exchange Equilibrium with AMSD Utility: A $2\times2$ Model
+
+Suppose there are $n$ assets and $m$ investors. Let $\mathbf x_i$ denote the portfolio held by investor $i$, $\boldsymbol\mu_i$ the vector of subjective expected asset payoffs, and $\boldsymbol\Sigma_i$ the corresponding covariance matrix. Under additive mean-standard-deviation (AMSD) preferences, investor $i$ has utility
+
+$$
+U_i(\mathbf x_i)
+=
+\boldsymbol\mu_i^\top\mathbf x_i
+-
+\gamma_i
+\sqrt{\mathbf x_i^\top\boldsymbol\Sigma_i\mathbf x_i}
+$$
+
+where $\gamma_i\geq0$ is the risk-aversion coefficient (Nakamura, 2015). Thus, expected payoff increases utility, whereas portfolio risk measured by the standard deviation reduces utility.
+
+`GeneralEquilibriumModeling.jl` provides the high-level function `GEMB.solve_asset_equilibrium_amsd` for computing this equilibrium. Short selling is excluded in the implementation. Suppose `Supply`, `PMP`, and `PSD` are $n\times m$ matrices containing initial asset endowments, subjective expected payoffs, and subjective payoff standard deviations, respectively; `Cor` is the $n\times n$ payoff correlation matrix; and `gamma` contains the $m$ risk-aversion coefficients. The equilibrium can then be computed directly by
+
+```julia
+using GeneralEquilibriumModeling
+
+result = GEMB.solve_asset_equilibrium_amsd(
+    Supply=Supply,
+    PMP=PMP,
+    PSD=PSD,
+    Cor=Cor,
+    gamma=gamma,
+)
+```
+
+For each investor, GEMB internally constructs a `MeanStandardDeviationMarginalUtilitySpec`, builds the corresponding pure-exchange consumer, and solves the resulting mixed complementarity problem through GEM. For numerical stability, the software uses a small smoothing parameter in the portfolio standard deviation.
+
+By default, the last asset is used as the numeraire. The main results include `result.p` for equilibrium asset prices, `result.D` for the equilibrium holding matrix, and `result.lambda` for the investors' budget multipliers. Quantities such as `result.VMU`, `result.market_residual`, and `result.kkt_passed` can be used to examine the marginal-utility and equilibrium conditions.
+
+
+::: {#lst-gemb_assetEquilibriumAMSD_nc2_na2}
+
+```{.julia include="code/gemb_assetEquilibriumAMSD_nc2_na2_v1.jl"}
+```
+
+A $2\times2$ Asset-Exchange Equilibrium Model
+
+:::
+
+
+<!-- liwu2 -->
+## Matthew Effect in Asset-Exchange Equilibrium: A $2\times2$ Model
+
+The Matthew effect refers to a process in which an initially small economic disparity becomes larger through subsequent interactions. In asset markets, such an effect may arise when investors' attitudes toward risk depend on their wealth. A relatively poor investor may become more risk averse and consequently hold more low-risk, low-expected-payoff assets, whereas a relatively rich investor may tolerate more risk and hold more high-risk, high-expected-payoff assets (Björk, Murgoci, Zhou, 2014). Asset exchange may therefore widen an initially small wealth difference.
+
+The following example illustrates this mechanism using the AMSD preferences introduced in the previous section. There are two assets and two investors. Their initial asset-endowment matrix is
+
+$$
+\mathbf S=
+\begin{pmatrix}
+0.49&0.51\\
+0.49&0.51
+\end{pmatrix}
+$$
+
+where rows represent assets and columns represent investors. Thus, investor 1 initially owns $0.49$ units of each asset, whereas investor 2 owns $0.51$ units of each asset.
+
+Both investors have the same subjective expected asset payoffs,
+
+$$
+\boldsymbol{\mu}_1
+=
+\boldsymbol{\mu}_2
+=
+\begin{pmatrix}
+120\\
+100
+\end{pmatrix}
+$$
+
+and the same payoff standard deviations,
+
+$$
+\boldsymbol{\sigma}_1
+=
+\boldsymbol{\sigma}_2
+=
+\begin{pmatrix}
+50\\
+10
+\end{pmatrix}
+$$
+
+The two asset payoffs are assumed to be uncorrelated, and the investors' common correlation matrix is
+
+$$
+\mathbf R=
+\begin{pmatrix}
+1&0\\
+0&1
+\end{pmatrix}
+$$
+
+Asset 1 therefore has both the higher expected payoff and the higher risk, whereas asset 2 has the lower expected payoff and the lower risk.
+
+The distinguishing feature of this example is that the risk-aversion coefficient depends on the investor's wealth. In the present example, expected portfolio payoff $w_i=\boldsymbol{\mu}_i^\top\mathbf x_i$ is used as a simple indicator of investor $i$'s wealth. Taking $110$ as the benchmark, set $\gamma_i=0.8$ when $w_i<110/1.02$, $\gamma_i=0.4$ when $110/1.02\leq w_i\leq110\times1.02$, and $\gamma_i=0.2$ when $w_i>110\times1.02$. Thus, lower expected wealth is associated with greater risk aversion, whereas higher expected wealth is associated with lower risk aversion.
+
+
+Under the initial endowments, the expected portfolio payoffs are $(107.8,112.2)$, so the initial payoff gap is only $4.4$. The corresponding initial risk-aversion coefficients are $(0.8,0.4)$.
+
+For a given vector of risk-aversion coefficients, `GEMB.solve_asset_equilibrium_amsd` directly computes the asset-exchange equilibrium. The expected portfolio payoffs implied by the resulting holdings are then used to update the risk-aversion coefficients. This process is repeated until the risk-aversion coefficients are consistent with the equilibrium portfolios that they generate.
+
+In this example, the procedure reaches a fixed point with $\boldsymbol{\gamma}^*=(0.8,0.2)$. Using asset 2 as the numeraire, the equilibrium asset-price vector is approximately
+
+$$
+\mathbf p^*
+=
+\begin{pmatrix}
+1.10036\\
+1
+\end{pmatrix}
+$$
+
+and the equilibrium portfolio matrix is approximately
+
+$$
+\mathbf D^*
+=
+\begin{pmatrix}
+0.09245&0.90755\\
+0.92745&0.07255
+\end{pmatrix}
+$$
+
+Investor 1, who starts with the lower expected wealth and has the higher risk-aversion coefficient, ends up holding mainly the lower-risk asset 2. Investor 2, who starts with the higher expected wealth and eventually has the lower risk-aversion coefficient, ends up holding mainly the higher-risk and higher-expected-payoff asset 1.
+
+The equilibrium expected portfolio payoffs are approximately $(103.839,116.161)$. Hence the payoff gap increases from $4.4$ to approximately $12.322$. Asset exchange therefore amplifies the initial difference in expected wealth in this example. The mechanism is self-reinforcing: lower expected wealth is associated with greater risk aversion and a portfolio tilted toward the lower-risk and lower-expected-payoff asset, whereas higher expected wealth is associated with lower risk aversion and greater exposure to the higher-risk and higher-expected-payoff asset.
+
+Computationally, the model has a simple two-step structure. Conditional on a given $\boldsymbol{\gamma}$, `GEMB.solve_asset_equilibrium_amsd` solves the asset-exchange equilibrium directly. The wealth-dependent risk-aversion rule then updates $\boldsymbol{\gamma}$, and the calculation continues until this rule and the asset-market equilibrium are mutually consistent.
+
+::: {#lst-gemb_assetExchange_MatthewEffect_AMSD_nc2_na2}
+
+```{.julia include="code/gemb_assetExchange_MatthewEffect_AMSD_nc2_na2_v5.jl"}
+```
+
+A $2\times2$ Asset-Exchange Equilibrium Model Illustrating the Matthew Effect
+
+:::

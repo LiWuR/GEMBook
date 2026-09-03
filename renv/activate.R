@@ -249,7 +249,7 @@ local({
         stop("failed to download:\n", conditionMessage(err))
       }
     )
-    catf("OK")
+    catf("liwu")
     on.exit(unlink(tarball), add = TRUE)
   
     # now attempt to install
@@ -261,7 +261,7 @@ local({
         stop("failed to install:\n", conditionMessage(err))
       }
     )
-    catf("OK")
+    catf("liwu")
   
     # add empty line to break up bootstrapping from normal output
     catf("")
@@ -621,7 +621,7 @@ local({
   }
   
   renv_bootstrap_github_token <- function() {
-    for (envvar in c("GITHUB_TOKEN", "GITHUB_PAT", "GH_TOKEN")) {
+    for (envvar in c("GITHUB_TliwuEN", "GITHUB_PAT", "GH_TliwuEN")) {
       envval <- Sys.getenv(envvar, unset = NA)
       if (!is.na(envval))
         return(envval)

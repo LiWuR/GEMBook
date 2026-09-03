@@ -1,0 +1,773 @@
+# Static Equilibrium with Production: Extended Models
+
+<!-- liwu2 -->
+## Pollution and Negative Prices: A $3\times2$ Model
+
+Assume the following:
+
+1. The economy contains three commodities and two economic agents, a firm and a consumer. Commodities 1, 2, and 3 are a product, labor, and pollution, respectively. Commodity 2 is taken as the numeraire commodity, so $p_2=1$.
+
+2. The firm operates at activity level $z$. Each unit of activity uses $a>0$ units of labor, produces one unit of the product, and jointly generates $c>0$ units of pollution. The product output per unit of activity is normalized to one.
+
+3. The consumer is endowed with $\omega>0$ units of labor and consumes $x$ units of the product, retains $l$ units of labor, and accepts $q$ units of pollution. Its utility function is $u=\beta\ln x+(1-\beta)\ln l-\delta q$, where $0<\beta<1$ and $\delta>0$.
+
+For a given price vector $\mathbf p=(p_1,1,p_3)^\top$, the consumer's optimal demands are
+
+$$
+x(\mathbf p)=-\frac{\beta p_3}{\delta p_1},\qquad
+l(\mathbf p)=-\frac{(1-\beta)p_3}{\delta},\qquad
+q(\mathbf p)=\frac{1}{\delta}+\frac{\omega}{p_3}
+$$
+
+for an interior solution with $p_3<-\delta\omega<0$. Hence the demand and supply matrices are
+
+$$
+\mathbf D(\mathbf p,z)=
+\begin{bmatrix}
+0&-\frac{\beta p_3}{\delta p_1}\\
+az&-\frac{(1-\beta)p_3}{\delta}\\
+0&\frac{1}{\delta}+\frac{\omega}{p_3}
+\end{bmatrix},
+\qquad
+\mathbf S(z)=
+\begin{bmatrix}
+z&0\\
+0&\omega\\
+cz&0
+\end{bmatrix}
+$$
+
+The equilibrium can then be obtained from the equality-form wide-sense structural equilibrium model.
+
+
+
+Define $\Delta=a+c\delta\omega$. The unique economically relevant equilibrium activity level is
+
+$$
+z^*=
+\frac{\Delta-\sqrt{\Delta^2-4ac\delta\beta\omega}}
+{2ac\delta}
+$$
+
+with $0<z^*<\min{\omega/a,\beta/(c\delta)}$. The equilibrium quantities are $x^*=z^*$, $l^*=\omega-az^*$, and $q^*=cz^*$, while
+
+$$
+p_1^*=
+\frac{\beta(\omega-az^*)}{(1-\beta)z^*},
+\qquad
+p_2^*=1,
+\qquad
+p_3^*=
+-\frac{\delta(\omega-az^*)}{1-\beta},
+\qquad
+\lambda^*=
+\frac{1-\beta}{\omega-az^*}
+$$
+
+Thus, a commodity need not have a nonnegative equilibrium price in a wide-sense structural equilibrium model. When a commodity is an undesirable joint product such as pollution, its negative price represents the compensation required for another economic agent to accept it.
+
+As a simple numerical case, let $a=c=1$, $\beta=1/2$, $\delta=1/8$, and $\omega=6$. Then $z^*=2$, $(x^*,l^*,q^*)=(2,4,2)$, and
+
+$$
+\mathbf p^*=[2,1,-1]^\top
+$$
+
+so the equilibrium price of pollution is $p_3^*=-1$.
+
+
+::: {#lst-gemb_pollution_negativePrice_nc3_na2}
+
+```{.julia include="code/gemb_pollution_negativePrice_nc3_na2_v1.jl"}
+```
+
+A $3\times2$ Equilibrium Model with Pollution and a Negative Price
+
+:::
+
+
+<!-- liwu2 -->
+## Producer-to-Consumer Externality: A $2\times2$ Model
+
+Assume the following:
+
+1. The economy contains two commodities and two economic agents, a firm and a consumer. Commodities 1 and 2 are a product and labor, respectively. Commodity 2 is taken as the numeraire commodity, so $p_2=1$.
+
+2. The firm uses one unit of labor to produce one unit of the product. Let $y$ denote its output.
+
+3. The consumer is endowed with $\omega>0$ units of labor and has utility function $u=(1-\kappa y)\ln x_1+\ln x_2$, where $\kappa>0$ measures the negative external effect of the firm's production and $1-\kappa y>0$. The consumer takes $y$ as given when choosing consumption.
+
+For a given $\mathbf p=(p_1,p_2)^\top$ and $y$, the consumer's demands are
+
+$$
+x_1(\mathbf p,y)=\frac{1-\kappa y}{2-\kappa y}\frac{\omega p_2}{p_1},
+\qquad
+x_2(\mathbf p,y)=\frac{\omega}{2-\kappa y}
+$$
+
+Hence the demand and supply matrices are
+
+$$
+\mathbf D(\mathbf p,y)=
+\begin{bmatrix}
+0&\frac{1-\kappa y}{2-\kappa y}\frac{\omega p_2}{p_1}\\
+y&\frac{\omega}{2-\kappa y}
+\end{bmatrix},
+\qquad
+\mathbf S(y)=
+\begin{bmatrix}
+y&0\\
+0&\omega
+\end{bmatrix}
+$$
+
+Applying the equality-form wide-sense structural equilibrium model yields $p_1^*=1$ and
+
+$$
+y^*=
+\frac{2+\omega\kappa-\sqrt{4+\omega^2\kappa^2}}
+{2\kappa}
+$$
+
+The equilibrium consumption vector is $[x_1^*,x_2^*]^\top=[y^*,\omega-y^*]^\top$.
+
+For $\omega=12$ and $\kappa=1/8$,
+
+$$
+y^*=4,
+\qquad
+\mathbf p^*=[1,1]^\top
+$$
+
+
+::: {#lst-gemb_CD_productionExternality_nc2_na2}
+
+```{.julia include="code/gemb_CD_productionExternality_nc2_na2_v1.jl"}
+```
+
+A $2\times2$ Equilibrium Model with Producer-to-Consumer Externality
+
+:::
+
+<!-- liwu2 -->
+## Marginal Pricing Principle and Scale Claim Rates
+### Scale Claim Rates
+
+As noted earlier, profit rates, ad valorem subsidy rates, and similar value ratios can generally be interpreted as ad valorem claim rates.
+
+A marginal pricing equilibrium (also called marginal cost pricing equilibrium) can be viewed as a natural extension of competitive equilibrium to nonconvex economies (Bonnisseau and Cornet, 1990; Quinzii, 1992). Under appropriate conditions, a Pareto-optimal allocation can often be represented as a marginal-pricing equilibrium allocation.
+
+In a marginal-pricing equilibrium, an appropriate claim rate may be required to reconcile marginal pricing with the firm's revenue-expenditure balance. When this claim rate is determined by the firm's scale elasticity, it is referred to as the **scale claim rate**. The scale claim rate denotes the value of the scale claim relative to the value of ordinary inputs. When positive, it can be interpreted as a cost-based profit rate, or scale profit rate; when negative, its absolute value can be interpreted as a subsidy rate.
+
+1. Let a firm's production function be $y=f(\mathbf x)$. Its scale elasticity is
+
+$$
+\varepsilon
+=
+\frac{\mathbf x^\top \nabla f(\mathbf x)}{f(\mathbf x)}
+$$
+
+and the corresponding scale claim rate is
+
+$$
+\tau_s
+=
+\frac{f(\mathbf x)}{\mathbf x^\top \nabla f(\mathbf x)}-1
+=
+\frac{1}{\varepsilon}-1
+$$
+
+2. Under marginal pricing, inputs are valued according to their marginal products. The scale claim rate measures the proportional claim required to reconcile the value of output with the value of inputs evaluated at marginal products. Thus, incorporating a claim at rate $\tau_s$ allows marginal pricing to be represented together with the firm's revenue-expenditure balance. The marginal-pricing principle can be applied not only to firms but also to consumer decision-making.
+
+3. If $f(\mathbf x)$ is homogeneous of degree $\theta>0$, Euler's theorem gives $\mathbf x^\top \nabla f(\mathbf x)=\theta f(\mathbf x)$, and hence
+
+$$
+\tau_s=\frac{1}{\theta}-1
+$$
+
+Thus, $\tau_s=0$ under constant returns to scale, $\tau_s>0$ under decreasing returns to scale, and $-1<\tau_s<0$ under increasing returns to scale. A positive scale claim rate implies that the firm distributes profits to its shareholders, whereas a negative scale claim rate implies that a subsidy must be provided to the firm to support marginal pricing.
+
+### Marginal Pricing with a Power Production Function: A $3\times2$ Model
+
+Consider a simple equilibrium model with marginal pricing and an ad valorem claim. Assume the following:
+
+1. The economy contains three commodities: a product, labor, and an ad valorem claim commodity. There is one firm and one consumer. Labor is the numeraire commodity.
+
+2. The firm has the production function $y=\alpha x_2^\theta$, where $x_2$ is labor input and $\alpha,\theta>0$.
+
+3. The consumer has utility function $u=x_1^\beta x_2^{1-\beta}$, where $0<\beta<1$, and is endowed with $\omega>0$ units of labor.
+
+4. The consumer owns one unit of the claim commodity. A claim at rate $\tau>-1$ is imposed on the firm's input expenditure. A positive $\tau$ can be interpreted as profit distributed by the firm to the claim holder, whereas a negative $\tau$ represents a subsidy provided to the firm. The scale-claim representation below assumes $\tau\ne0$. When $\tau=0$, the scale claim has zero value and can simply be omitted from the model.
+
+Let $\mathbf p=(p_1,1,p_3)^\top$ and let $w$ denote consumer income. The demand and supply matrices are
+
+$$
+\mathbf D(\mathbf p,w,y)=
+\begin{bmatrix}
+0&\beta w/p_1\\
+(y/\alpha)^{1/\theta}&(1-\beta)w\\
+(y/\alpha)^{1/\theta}\tau/p_3&0
+\end{bmatrix},
+\qquad
+\mathbf S(y)=
+\begin{bmatrix}
+y&0\\
+0&\omega\\
+0&1
+\end{bmatrix}
+$$
+
+Applying the equality-form wide-sense structural equilibrium model gives
+
+$$
+p_1^*=
+\frac{1+\tau}{\alpha}
+\left(
+\frac{\beta\omega}{1+(1-\beta)\tau}
+\right)^{1-\theta},
+\qquad
+p_3^*=
+\frac{\tau\beta\omega}{1+(1-\beta)\tau}
+$$
+
+and
+
+$$
+w^*=
+\frac{\omega(1+\tau)}{1+(1-\beta)\tau},
+\qquad
+y^*=
+\alpha
+\left(
+\frac{\beta\omega}{1+(1-\beta)\tau}
+\right)^\theta
+$$
+
+Under marginal pricing, the claim rate should satisfy the scale-claim-rate consistency condition
+
+$$
+\tau=\frac{1}{\theta}-1
+$$
+
+The equilibrium then becomes
+
+$$
+p_1^*=
+\frac{1}{\alpha\theta}
+\left(
+\frac{\beta\theta\omega}{1-\beta+\beta\theta}
+\right)^{1-\theta},
+\qquad
+p_3^*=
+\frac{\beta\omega(1-\theta)}
+{1-\beta+\beta\theta}
+$$
+
+and
+
+$$
+w^*=
+\frac{\omega}{1-\beta+\beta\theta},
+\qquad
+y^*=
+\alpha
+\left(
+\frac{\beta\theta\omega}
+{1-\beta+\beta\theta}
+\right)^\theta
+$$
+
+Thus, the scale claim reconciles marginal pricing with the firm's revenue-expenditure balance. 
+
+For a simple comparison, let $\beta=1/2$ and $\omega=3$ in both cases. Under decreasing returns to scale, take $\theta=1/2$ and $\alpha=2$. The scale claim rate is then $\tau=1$, and the equilibrium is $\mathbf p^*=[1,1,1]^\top$, $w^*=4$, and $y^*=2$. Under increasing returns to scale, take $\theta=2$ and $\alpha=1/4$. The corresponding scale claim rate is $\tau=-1/2$, and the equilibrium is $\mathbf p^*=[1,1,-1]^\top$, $w^*=2$, and $y^*=1$. 
+
+::: {#lst-gemb_powerProduction_scaleClaimRate_nc3_na2}
+
+```{.julia include="code/gemb_powerProduction_scaleClaimRate_nc3_na2_v1.jl"}
+```
+
+A $3\times2$ Equilibrium Model with a Power Production Function and a Scale Claim
+
+:::
+
+
+### Marginal Pricing with an Exponential Production Function: A $3\times2$ Model
+
+Assume the following:
+
+1. The economy contains three commodities and two economic agents, a firm and a consumer. Commodities 1, 2, and 3 are a product, labor, and a scale claim, respectively. Commodity 2 is taken as the numeraire commodity, so $p_2=1$.
+
+2. The firm minimizes cost for a given output $y$ and has the piecewise production function
+
+$$
+f(x)=
+\begin{cases}
+\frac{\alpha\theta^\xi}{\xi}x,&0\leq x<\xi\\[4pt]
+\alpha\theta^x,&x\geq\xi
+\end{cases}
+$$
+
+where $\alpha>0$, $\theta>1$, and $\xi>0$. Only equilibria with $x^*>\xi$ are considered. In this region, $y=\alpha\theta^x$ and $x=\ln(y/\alpha)/\ln\theta$.
+
+3. The consumer has utility function $u=x_1^\beta x_2^{1-\beta}$, where $0<\beta<1$, and is endowed with $\omega>0$ units of labor and one unit of the scale claim.
+
+4. Under marginal pricing, the scale claim rate depends on the firm's input and is given by
+
+$$
+\tau(x)=\frac{1}{x\ln\theta}-1
+$$
+The scale-claim representation below assumes $\tau(x^*)\ne0$. If $\tau(x^*)=0$, the scale claim has zero value and can simply be omitted from the model.
+
+Thus, unlike the power-production example, the scale claim rate is endogenous and varies with the equilibrium scale of production.
+
+Let $\mathbf p=(p_1,1,p_3)^\top$ and let $w$ denote consumer income. The demand and supply matrices are
+
+$$
+\mathbf D(\mathbf p,w,y)=
+\begin{bmatrix}
+0&\beta w/p_1\\
+x&(1-\beta)w\\
+x\tau(x)/p_3&0
+\end{bmatrix},
+\qquad
+\mathbf S(y)=
+\begin{bmatrix}
+y&0\\
+0&\omega\\
+0&1
+\end{bmatrix},
+\qquad
+x=\frac{\ln(y/\alpha)}{\ln\theta}
+$$
+
+Applying the equality-form wide-sense structural equilibrium model together with the scale-claim-rate consistency condition yields
+
+$$
+x^*=
+\omega-\frac{1-\beta}{\beta\ln\theta}
+$$
+
+which requires
+
+$$
+\omega>
+\xi+\frac{1-\beta}{\beta\ln\theta}
+$$
+
+The corresponding scale claim rate is
+
+$$
+\tau^*=
+\frac{1-\beta\omega\ln\theta}
+{\beta\omega\ln\theta-(1-\beta)}
+$$
+
+and the remaining equilibrium values are
+
+$$
+p_1^*=
+\frac{e^{(1-\beta)/\beta}}
+{\alpha(\ln\theta)\theta^\omega},
+\qquad
+p_3^*=
+\frac{1}{\beta\ln\theta}-\omega
+$$
+
+$$
+w^*=
+\frac{1}{\beta\ln\theta},
+\qquad
+y^*=
+\alpha\theta^\omega e^{-(1-\beta)/\beta}
+$$
+
+Thus, the scale claim rate is determined jointly with the firm's production scale. 
+
+For a simple comparison, let $\beta=1/2$, $\theta=e$, and $\xi=1/4$ in both cases. When $\omega=3/2$ and $\alpha=e^{-1/2}$, the equilibrium input is $x^*=1/2$, the endogenous scale claim rate is $\tau^*=1$, and the equilibrium is $\mathbf p^*=[1,1,1/2]^\top$, $w^*=2$, and $y^*=1$. When $\omega=3$ and $\alpha=e^{-2}$, the equilibrium input is $x^*=2$, the endogenous scale claim rate is $\tau^*=-1/2$, and the equilibrium is $\mathbf p^*=[1,1,-1]^\top$, $w^*=2$, and $y^*=1$. 
+
+In the GEMB implementation, an additional condition agent is introduced to impose the endogenous scale-claim-rate consistency condition, so the computational model contains three agents although the economy itself contains only two economic agents.
+
+::: {#lst-gemb_exponentialProduction_endogenousScaleClaimRate_nc3_na2}
+
+```{.julia include="code/gemb_exponentialProduction_endogenousScaleClaimRate_nc3_na2_v1.jl"}
+```
+
+An Equilibrium Model with Exponential Production and an Endogenous Scale Claim Rate
+
+:::
+
+<!-- liwu2 -->
+## Degree-One Homogenization of Production Functions {#sec-Homogenization}
+
+### Degree-One Homogenization and the Scale Claim Rate
+
+Degree-one homogenization is commonly used to transform a production function with decreasing returns to scale into one with constant returns to scale (McKenzie, 2002, p. 216). More generally, the method can also be applied to production functions with increasing or variable returns to scale, thereby providing a unified constant-returns-to-scale representation for different types of returns to scale.
+
+Consider a firm with production function $y=f(\mathbf x)$, where $\mathbf x=(x_1,\ldots,x_n)^\top$ denotes ordinary production inputs. The firm is assumed to follow the marginal-pricing principle, represented in GEMB by the first-order stationarity conditions with `behavior=:stationary`.
+
+Introduce an additional commodity, called a scale claim, with quantity $c>0$, and define the degree-one homogenized production function
+
+$$
+g(\mathbf x,c)
+=
+c f\left(\frac{\mathbf x}{c}\right)
+$$
+
+where $\mathbf x/c=(x_1/c,\ldots,x_n/c)^\top$. The function $g(\mathbf x,c)$ is homogeneous of degree one in $(\mathbf x,c)$. Suppose the aggregate supply of the scale claim is normalized to one. Market clearing then implies $c=1$.
+
+Let $p_y$ denote the output price, $\mathbf p_x=(p_{x1},\ldots,p_{xn})^\top$ the prices of ordinary inputs, and $p_c$ the price of the scale claim. Under marginal pricing, the stationarity conditions at $c=1$ imply
+
+$$
+\mathbf p_x
+=
+p_y\nabla f(\mathbf x)
+$$
+
+and
+
+$$
+p_c
+=
+p_y
+\left(
+f(\mathbf x)
+-
+\mathbf x^\top\nabla f(\mathbf x)
+\right)
+$$
+
+Since $g$ is homogeneous of degree one, the firm's revenue-expenditure balance is
+
+$$
+p_yy
+=
+\mathbf p_x^\top\mathbf x+p_cc
+$$
+
+Define the scale claim rate as the ratio of the value of the scale claim to the value of ordinary inputs. Then
+
+$$
+\tau(\mathbf x)
+=
+\frac{f(\mathbf x)}
+{\mathbf x^\top\nabla f(\mathbf x)}
+-1
+$$
+
+Let the local scale elasticity of production be
+
+$$
+\varepsilon_f(\mathbf x)
+=
+\frac{\mathbf x^\top\nabla f(\mathbf x)}
+{f(\mathbf x)}
+$$
+
+The scale claim rate can therefore be written as
+
+$$
+\tau(\mathbf x)
+=
+\frac{1}{\varepsilon_f(\mathbf x)}-1
+$$
+
+Thus, locally decreasing returns to scale imply a positive scale claim rate, constant returns to scale imply a zero rate, and locally increasing returns to scale imply a negative rate. 
+
+<!-- liwu2 -->
+### Equivalence under Degree-One Homogenization
+
+Degree-one homogenization expands the commodity space by introducing the scale claim while preserving the original production technology when $c=1$. In particular,
+
+$$
+g(\mathbf x,1)=f(\mathbf x)
+$$
+
+and
+
+$$
+\nabla_{\mathbf x}g(\mathbf x,1)
+=
+\nabla f(\mathbf x)
+$$
+
+Therefore, when the scale-claim market clears at $c=1$, the technological relation between the original inputs and output is unchanged, and the marginal-pricing conditions for the ordinary inputs are identical to those in the original model. The additional stationarity condition associated with the scale claim implies
+
+$$
+p_c
+=
+p_yf(\mathbf x)
+-
+\mathbf p_x^\top\mathbf x
+$$
+
+Thus, the difference between output value and the value of ordinary inputs under marginal pricing is represented as the value of the scale claim. The scale-claim price $p_c$ is an endogenous equilibrium price determined jointly with the other prices and quantities.
+
+Hence, on the production side, degree-one homogenization provides an equivalent representation of the original technology and its marginal-pricing conditions in an expanded commodity space. Equivalence of the complete equilibrium system additionally requires consistency in the treatment of the scale claim. Its aggregate supply must be normalized so that market clearing implies $c=1$, and its endowment must be allocated so that the resulting scale-claim value corresponds to the distribution of the residual between output value and ordinary-input value in the original model. All other endowments, technologies, preferences, and market-clearing conditions remain unchanged.
+
+
+
+### Power and Exponential Production Functions
+
+For the power production function
+
+$$
+f(x)=\alpha x^\theta
+$$
+
+degree-one homogenization gives
+
+$$
+g(x,c)
+=
+c f\left(\frac{x}{c}\right)
+=
+\alpha x^\theta c^{1-\theta}
+$$
+
+For the exponential branch of the production function,
+
+$$
+f(x)=\alpha\theta^x,\qquad x\geq\xi>0
+$$
+
+degree-one homogenization gives
+
+$$
+g(x,c)
+=
+c f\left(\frac{x}{c}\right)
+=
+\alpha c\theta^{x/c},
+\qquad
+\frac{x}{c}\geq\xi>0,\quad c>0
+$$
+
+
+In GEMB, the scale claim commodity can be included as an additional production input in a `ProductionFunctionSpec`, with its aggregate supply normalized to one and the firm specified with `behavior=:stationary`. When the marginal products contain a common strictly positive factor, this factor may be omitted to obtain a scaled marginal-product function. Such scaling changes only the production multiplier and leaves equilibrium quantities and prices unchanged.
+
+The power production case is implemented in @lst-gemb_powerProduction_degreeOneHomogenization.
+
+
+::: {#lst-gemb_powerProduction_degreeOneHomogenization}
+
+```{.julia include="code/gemb_powerProduction_degreeOneHomogenization_nc3_na2_v3.jl"}
+```
+
+
+Degree-One Homogenization of a Power Production Function
+:::
+
+The exponential production case illustrates a production function whose scale elasticity, and hence scale claim rate, varies with the input level. The corresponding implementation is given in @lst-gemb_exponentialProduction_degreeOneHomogenization.
+
+::: {#lst-gemb_exponentialProduction_degreeOneHomogenization}
+
+```{.julia include="code/gemb_exponentialProduction_degreeOneHomogenization_nc3_na2_v2.jl"}
+```
+
+Degree-One Homogenization of an Exponential Production Function
+
+:::
+
+### Square-Sum Production Function and Marginal Pricing Equilibria: A $4\times2$ Model
+
+Assume the following:
+
+1. The economy contains four commodities: a product, labor, land, and a scale claim. There are two economic agents, a firm and a consumer. The product is taken as the numeraire commodity.
+
+2. The firm's original production function is $f(x_2,x_3)=x_2^2+x_3^2$, where $x_2$ and $x_3$ denote labor and land inputs, respectively. Introduce the scale claim input $x_4>0$ and degree-one homogenize the production function as
+
+$$
+g(x_2,x_3,x_4)
+=
+x_4 f\left(\frac{x_2}{x_4},\frac{x_3}{x_4}\right)
+=
+\frac{x_2^2+x_3^2}{x_4}
+$$
+
+The aggregate supply of the scale claim is normalized to one. The firm follows the marginal-pricing principle, represented in GEMB by the stationarity conditions with `behavior=:stationary`.
+
+3. The consumer has utility function $u=c_1^{0.5}c_2^{0.25}c_3^{0.25}$, where $c_1$, $c_2$, and $c_3$ denote consumption of the product, labor, and land, respectively. The consumer is endowed with 100 units of labor, 100 units of land, and one unit of the scale claim.
+
+The Pareto-optimal allocation of the original commodities corresponds to a maximizer of
+
+$$
+F(x_2,x_3)
+=
+(x_2^2+x_3^2)^{0.5}
+(100-x_2)^{0.25}
+(100-x_3)^{0.25},
+\qquad
+0\leq x_2,x_3\leq100
+$$
+
+This function has three stationary points. Checking the boundary shows that the global maximum is attained at
+
+$$
+x_2=x_3=\frac{200}{3}
+$$
+
+while the other two stationary points are saddle points.
+
+Let the price vector be $\mathbf p=(1,p_2,p_3,p_4)^\top$. The marginal products of the degree-one homogenized production function are
+
+$$
+g_{x_2}
+=
+\frac{2x_2}{x_4},
+\qquad
+g_{x_3}
+=
+\frac{2x_3}{x_4},
+\qquad
+g_{x_4}
+=
+-\frac{x_2^2+x_3^2}{x_4^2}
+$$
+
+Since the aggregate supply of the scale claim equals one, market clearing implies $x_4=1$. The firm's stationarity conditions therefore give
+
+$$
+p_2=2x_2,
+\qquad
+p_3=2x_3,
+\qquad
+p_4=-(x_2^2+x_3^2)
+$$
+
+and hence
+
+$$
+x_2=\frac{p_2}{2},
+\qquad
+x_3=\frac{p_3}{2},
+\qquad
+y=\frac{p_2^2+p_3^2}{4},
+\qquad
+p_4=-\frac{p_2^2+p_3^2}{4}
+$$
+
+Let the consumer's income be
+
+$$
+w=100p_2+100p_3+p_4
+$$
+
+The demand and supply matrices are
+
+$$
+\mathbf D(\mathbf p,w)
+=
+\begin{bmatrix}
+0 & \frac{w}{2}\\
+\frac{p_2}{2} & \frac{w}{4p_2}\\
+\frac{p_3}{2} & \frac{w}{4p_3}\\
+1 & 0
+\end{bmatrix}
+$$
+
+and
+
+$$
+\mathbf S(\mathbf p)
+=
+\begin{bmatrix}
+\frac{p_2^2+p_3^2}{4} & 0\\
+0 & 100\\
+0 & 100\\
+0 & 1
+\end{bmatrix}
+$$
+
+Solving the corresponding equality-form wide-sense structural equilibrium model yields three equilibria, corresponding to the three stationary points of $F(x_2,x_3)$.
+
+1. The first equilibrium, corresponding to the Pareto-optimal allocation, is
+
+$$
+\mathbf p^*
+=
+\left(
+1,
+\frac{400}{3},
+\frac{400}{3},
+-\frac{80000}{9}
+\right)^\top,
+\qquad
+w^*
+=
+\frac{160000}{9}
+$$
+
+with
+
+$$
+x_2^*=x_3^*=\frac{200}{3}
+$$
+
+2. The second equilibrium is
+
+$$
+\mathbf p^*
+=
+\left(
+1,
+100-\frac{100\sqrt3}{3},
+100+\frac{100\sqrt3}{3},
+-\frac{20000}{3}
+\right)^\top,
+\qquad
+w^*
+=
+\frac{40000}{3}
+$$
+
+with
+
+$$
+(x_2^*,x_3^*)
+=
+\left(
+50-\frac{50\sqrt3}{3},
+50+\frac{50\sqrt3}{3}
+\right)
+$$
+
+3. The third equilibrium is
+
+$$
+\mathbf p^*
+=
+\left(
+1,
+100+\frac{100\sqrt3}{3},
+100-\frac{100\sqrt3}{3},
+-\frac{20000}{3}
+\right)^\top,
+\qquad
+w^*
+=
+\frac{40000}{3}
+$$
+
+with
+
+$$
+(x_2^*,x_3^*)
+=
+\left(
+50+\frac{50\sqrt3}{3},
+50-\frac{50\sqrt3}{3}
+\right)
+$$
+
+
+Hence degree-one homogenization yields three marginal-pricing equilibria corresponding to the three stationary points of the original allocation problem. Only the first corresponds to the Pareto-optimal allocation, while the other two correspond to saddle points.
+
+The three equilibria can be obtained numerically from different starting values. The corresponding GEMB implementation is given in @lst-gemb_squareSumProduction_degreeOneHomogenization.
+
+::: {#lst-gemb_squareSumProduction_degreeOneHomogenization}
+
+```{.julia include="code/gemb_squareSumProduction_degreeOneHomogenization_nc4_na2_v4.jl"}
+```
+
+Degree-One Homogenization of a Square-Sum Production Function with Multiple Equilibria
+
+:::

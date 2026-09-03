@@ -1,42 +1,20 @@
-::: {.callout-warning}### 🚧 正在编写中 (Work in Progress)
-本书稿目前处于初稿撰写阶段，各章节内容与数学推导可能随时调整。如发现任何错漏，欢迎在 [GitHub Issues](https://github.com/<用户名>/<仓库名>/issues) 中提出反馈。
+::: {.callout-warning}
+🚧 Work in Progress
+
+This manuscript is currently a draft. If you spot any errors or typos, or have suggestions, please feel free to submit feedback via [GitHub Issues](https://github.com/LiwuR/gembook/issues).
 :::
 
+<!-- liwu1 -->
 # Preface {.unnumbered}
 
-This is a Quarto book.
+This book provides a concise introduction to applied general equilibrium modeling. It aims to explain, as clearly and directly as possible, the basic structure of general equilibrium models, methods for constructing such models, and their numerical solution. The book has the following main features:
 
-To learn more about Quarto books visit <https://quarto.org/docs/books>.
+1. The mathematical models presented in this book are primarily based on the structural equilibrium model (SEM) developed by the author (Li, 2019). The SEM extends the von Neumann equilibrium model and provides a matrix-based framework for describing economic agents and their activities, input-output relationships, and market equilibrium conditions in a unified manner. A structural equilibrium model can also be transformed into a complementarity problem. Compared with its complementarity formulation, the structural equilibrium representation is generally more intuitive and makes the economic structure of the model and its equilibrium conditions easier to understand.
 
-```julia
-interestRateDeterminer = add_agent!(
-    model,
-    interest_rate_spec;
-    variable_names=[
-        :r1,
-        :r2,
-        :r3,
-        :terminal_full_price,
-    ],
-    variable_start=[
-        1.0 / 3.0,
-        1.0 / 2.0,
-        1.0,
-        1.0 / 3.0,
-    ],
-    variable_lower_bounds=(-Inf),
-    variable_upper_bounds=Inf,
-    observed_variables=[
-        PriceVariableRef(Symbol(:money_, i))
-        for i in 1:4
-    ],
-    name=:interestRateDeterminer,
-)
-```
+2. The numerical models in this book are primarily constructed and solved using `GeneralEquilibriumModeling.jl`, a Julia package developed by the author. The package contains two main modules: `GEM`, which provides the core representation and solution framework for general equilibrium models, and `GEMB`, which provides more user-friendly, concise, and economically oriented modeling tools built on `GEM`. The `GEM` module uses `PATHSolver.jl` as its underlying solver for the complementarity problems associated with general equilibrium models.
 
+3. Compared with `MPSGE.jl`, which emphasizes concise construction and solution of computable general equilibrium (CGE) models, and `JCGE.jl`, which is oriented toward modular CGE modeling, `GeneralEquilibriumModeling.jl` places greater emphasis on the direct correspondence between economic theory and numerical models. In particular, its `GEMB` module is well suited for learning and teaching general equilibrium modeling. It allows users to begin with the behavior of economic agents and equilibrium conditions, understand structural equilibrium models and their complementarity representations, and gradually construct applied general equilibrium models.
 
+4. This book is organized largely as a handbook of examples. A sequence of models, progressing from simple to more complex settings, is used to introduce the construction, representation, numerical solution, and economic interpretation of general equilibrium models.
 
-
-
-
-<!-- 冯·诺伊曼均衡模型、结构均衡模型和广义结构均衡模型均属于本征系统形式的均衡模型。从数学形式上看，应用型的一般均衡模型具有各种各样的表示形式，例如极小极大不等式形式、不动点形式、变分不等式形式、互补问题形式以及本征系统形式等。针对不同的研究问题，可以选择适当的表示形式。其中，樊畿（Ky Fan）型均衡不等式是一种具有高度统一性的表示形式。这类均衡问题可以将优化问题、互补问题、不动点问题、变分不等式和纳什均衡问题等作为其特殊情形（Blum，Oettli，1994；Anh，Ansari，2021）。Ky Fan极小极大不等式为上述均衡问题在适当条件下的均衡点存在性提供了理论依据，并且在一定意义上，它和KKM定理、Sperner引理、布劳威尔不动点定理，角谷不动点定理等价（田国强，2024，第120页）。对于互补问题形式的均衡模型，可以使用Julia调用PATH求解器求解。 -->
+5. The book is intended as a concise overview. Its emphasis is on the basic ideas, model structures, and practical methods of general equilibrium modeling rather than on extensive literature reviews, detailed theoretical proofs, or systematic instruction in programming syntax. Some Julia examples in this book have been adapted from examples in the author's earlier R packages, `GE` and `CGE`.

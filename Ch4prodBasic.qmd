@@ -1,0 +1,872 @@
+# Static Equilibrium with Production: Basic Models
+
+## Production and Transformation Specifications
+
+GEMB provides several specifications for describing production technologies and the transformation of an activity level into outputs. These specifications can be divided into two broad classes. A production specification describes the relationship between production activity and inputs, whereas a transformation specification describes the relationship between activity level and outputs.
+
+<!-- liwu1 -->
+### Production-Function Specification
+`ProductionFunctionSpec` can be used when the production function and its marginal products are known explicitly. Let the production function be
+
+$$
+y=f(\mathbf x)
+$$
+
+where $\mathbf x=(x_1,\ldots,x_n)^\top$ is the input vector. The user supplies both $f(\mathbf x)$ and a marginal-product vector. The latter may be either the exact gradient
+
+$$
+\nabla f(\mathbf x)
+=
+\left(
+\frac{\partial f}{\partial x_1},
+\ldots,
+\frac{\partial f}{\partial x_n}
+\right)^\top
+$$
+
+or this vector multiplied by a common strictly positive factor, since such a scaling does not change the production stationarity conditions.
+
+For example, consider the Cobb--Douglas production function
+
+$$
+f(\mathbf x)=x_1^{0.6}x_2^{0.4}
+$$
+
+Its marginal-product vector can be multiplied by the common positive factor $x_1^{0.4}x_2^{0.6}$, giving the simpler proportional vector $(0.6x_2,0.4x_1)^\top$. The specification can therefore be written as
+
+```julia
+production_function = x ->
+    x[1]^0.6 * x[2]^0.4
+
+marginal_product_function = x -> [
+    0.6 * x[2],
+    0.4 * x[1],
+]
+
+spec = GEMB.ProductionFunctionSpec(
+    production_function,
+    marginal_product_function;
+    behavior=:stationary,
+)
+```
+
+The keyword `behavior` determines how the production technology is incorporated into the equilibrium system. With `behavior=:stationary`, GEMB constructs production stationarity conditions. The current stationary formulation assumes an interior solution, so the marginal-pricing conditions are imposed as equalities. With `behavior=:cost_min`, GEMB instead constructs cost-minimization KKT conditions, which allow corner solutions. Thus, the production function describes the technology, while `behavior` specifies the conditions imposed on the producer.
+
+
+Commodity mappings are not contained in `ProductionFunctionSpec`. They are supplied when the producer is added to the model. For example,
+
+```julia
+GEMB.add_agent!(
+    model,
+    spec;
+    outputs=:product,
+    demands=[:labor, :capital],
+    activity_start=100.0,
+    demand_start=[100.0, 100.0],
+    name=:firm,
+)
+```
+
+The resulting producer contains an activity level, endogenous input quantities, and a production multiplier. 
+
+### Power-Production Specification
+
+For the commonly used one-input power production function
+
+$$
+y=\alpha x^\theta,
+\qquad
+\alpha>0,\quad\theta>0
+$$
+
+GEMB provides the simpler built-in `PowerProductionSpec`:
+
+```julia
+GEMB.PowerProductionSpec(
+    alpha=1.0,
+    theta=1.0,
+)
+```
+
+If the production activity is $y$, the required input is obtained directly from the inverse production function,
+
+$$
+x
+=
+\left(
+\frac{y}{\alpha}
+\right)^{1/\theta}
+$$
+
+Thus, unlike `ProductionFunctionSpec`, `PowerProductionSpec` does not introduce the input quantity through a separate production-function constraint and marginal-product conditions. Instead, the input demand is computed directly as a function of the activity level. It is therefore an activity-demand specification and requires exactly one input commodity.
+
+A producer can, for example, be constructed by
+
+```julia
+GEMB.add_agent!(
+    model,
+    GEMB.PowerProductionSpec(
+        alpha=2.0,
+        theta=0.5,
+    );
+    outputs=:product,
+    demands=:labor,
+    activity_start=100.0,
+    name=:firm,
+)
+```
+
+By default, a producer based on `PowerProductionSpec` uses `TotalRevenueExpenditureBalanceConditions`. Hence the default specification imposes total revenue-expenditure balance at a positive activity level. When $\theta\ne1$, this condition should not be confused with marginal-cost pricing or the first-order condition of unconstrained profit maximization. Alternative producer conditions may be supplied explicitly when required by the economic model.
+
+`ProductionFunctionSpec` and `PowerProductionSpec` therefore provide two different ways to represent production. The former explicitly introduces input quantities and production first-order conditions, whereas the latter substitutes the inverse production function directly into the producer's conditional demand.
+
+### CET Transformation Specification
+
+When one production activity generates several possible outputs, their proportions need not be fixed. GEMB provides `CETSpec` for a constant-elasticity-of-transformation (CET) output specification:
+
+```julia
+GEMB.CETSpec(
+    beta;
+    et=1.0,
+    alpha=1.0,
+)
+```
+
+Let $\boldsymbol{\beta}=(\beta_1,\ldots,\beta_m)^\top$ denote the output weights, $\eta\geq0$ denote the elasticity of transformation corresponding to `et`, and $\alpha>0$ denote the scale parameter. For an output-price vector $\mathbf p=(p_1,\ldots,p_m)^\top$, GEMB uses the unit-revenue function
+
+$$
+r(\mathbf p)
+=
+\frac{1}{\alpha}
+\left(
+\sum_{i=1}^m
+\beta_i p_i^{1+\eta}
+\right)^{1/(1+\eta)}
+$$
+
+If the activity level is $z$, the conditional supply of output $i$ is
+
+$$
+y_i
+=
+\frac{z}{\alpha}
+\beta_i p_i^\eta
+\left(
+\sum_{j=1}^m
+\beta_jp_j^{1+\eta}
+\right)^{-\eta/(1+\eta)}
+$$
+
+Hence, for two outputs with positive quantities and prices,
+
+$$
+\frac{y_i}{y_j}
+=
+\frac{\beta_i}{\beta_j}
+\left(
+\frac{p_i}{p_j}
+\right)^\eta
+$$
+
+so `et` directly measures the elasticity of the output ratio with respect to the relative output price. A larger `et` therefore makes the output composition more responsive to relative prices. When `et=0`, the output proportions are fixed:
+
+$$
+y_i
+=
+\frac{\beta_i}{\alpha}z
+$$
+
+`CETSpec` is an output-side specification and is supplied through the `output_spec` argument of an activity-demand producer. For example, a producer may use a CES specification for its conditional input demands and a CET specification for its conditional output supplies:
+
+```julia
+GEMB.add_agent!(
+    model,
+    GEMB.CESSpec(
+        [0.6, 0.4];
+        es=1.0,
+        alpha=1.0,
+    );
+    outputs=[:product1, :product2],
+    output_spec=GEMB.CETSpec(
+        [0.5, 0.5];
+        et=2.0,
+        alpha=1.0,
+    ),
+    demands=[:labor, :land],
+    activity_start=100.0,
+    name=:firm,
+)
+```
+
+In this construction, the CES specification determines the inputs required for a given activity level, while the CET specification determines how that activity is transformed into the two outputs. If no `output_spec` is supplied, output quantities are instead proportional to the activity level through fixed output coefficients. Consequently, `output_spec` and fixed `output_coefficients` represent alternative ways of describing the output side and are not used simultaneously.
+
+This separation between input and output specifications is particularly useful for joint production. The input side determines the resources required to support an activity level, while the output side determines the composition of the commodities supplied by that activity. The same activity variable therefore links production and transformation within a single economic agent.
+
+<!-- liwu1 -->
+## Equivalent Representations Using Auxiliary Commodities and Virtual Producers
+In addition to representing an economic structure directly through the specifications described above, GEMB models can sometimes be constructed more conveniently by introducing auxiliary commodities, additional factors, or virtual producers. Such transformations enlarge the formal representation of the model while preserving the underlying equilibrium relationships for the original commodities and economic agents.
+
+1. A production function with nonconstant returns to scale can be represented as a constant-returns-to-scale technology by introducing an additional commodity with fixed aggregate supply. We refer to this commodity as a scale claim. This well-known **degree-one homogenization** method applies to decreasing, increasing, or variable returns to scale (see @sec-Homogenization for details). When the original production function exhibits decreasing returns to scale, the scale claim may also be interpreted as an entrepreneurial factor (McKenzie, 2002, p. 216).
+
+2. Nested production or utility functions can be represented using virtual producers. Each nest is treated as a separate production activity whose output is an intermediate virtual commodity used by the next nest. In the case of consumer preferences, a consumer can equivalently be decomposed into a virtual utility producer and a utility consumer. The utility producer uses the consumer's ordinary commodities as inputs and produces a virtual utility commodity according to the original utility function, while the utility consumer consumes only this utility commodity.
+
+3. Virtual producers can also be used to represent taxes imposed on only part of a producer's inputs. Taxed inputs can be distinguished from their corresponding untaxed commodities by introducing virtual taxed-input commodities. Virtual producers convert the original commodities into the corresponding taxed-input commodities while incorporating the relevant tax payments. The actual producer then demands these taxed-input commodities instead of the corresponding original commodities, whereas untaxed inputs continue to enter the production activity directly.
+
+These constructions share a common modeling principle: auxiliary commodities, additional factors, or virtual producers are introduced to transform a nonstandard structure into an equivalent system of standard activities and market relationships.
+
+## CES-CET Production: A $4\times2$ Model
+
+
+Assume the following:
+
+1. The economy contains four commodities and two economic agents, a firm and a consumer. Commodities 1 and 2 are products, while commodities 3 and 4 are labor and land, respectively. Commodity 1 is taken as the numeraire commodity.
+
+2. The firm uses labor and land to generate the activity level $z$ according to the production function $z=x_3^{2/3}x_4^{1/3}$, where $x_3$ and $x_4$ denote labor and land inputs, respectively. The activity is transformed into the two products according to the CET transformation function $y_1^2+2y_2^2=3z^2$.
+
+3. The consumer is endowed with $\omega>0$ units of labor and $\omega'>0$ units of land and consumes all four commodities. Its utility function is $u=c_1^{1/6}c_2^{1/3}c_3^{1/3}c_4^{1/6}$, where $c_i$ denotes consumption of commodity $i$.
+
+Let the price vector be $\mathbf p=(1,p_2,p_3,p_4)^\top$. The firm's conditional factor demand and product supply vectors are
+
+$$
+\mathbf x(\mathbf p,z)
+=
+z
+\left(
+\left(\frac{2p_4}{p_3}\right)^{1/3},
+\left(\frac{p_3}{2p_4}\right)^{2/3}
+\right)^\top
+$$
+
+and
+
+$$
+\mathbf y(\mathbf p,z)
+=
+\frac{3z}{\left(3+\frac32p_2^2\right)^{1/2}}
+\left(
+1,\frac12p_2
+\right)^\top
+$$
+
+The consumer's income is $w=\omega p_3+\omega'p_4$, and its demand vector is
+
+$$
+\mathbf c(\mathbf p)
+=
+w
+\left(
+\frac16,
+\frac{1}{3p_2},
+\frac{1}{3p_3},
+\frac{1}{6p_4}
+\right)^\top
+$$
+
+Hence the demand and supply matrices are
+
+$$
+\mathbf D(\mathbf p,z)
+=
+\begin{bmatrix}
+0&c_1\\
+0&c_2\\
+x_3&c_3\\
+x_4&c_4
+\end{bmatrix}
+$$
+
+and
+
+$$
+\mathbf S(\mathbf p,z)
+=
+\begin{bmatrix}
+y_1&0\\
+y_2&0\\
+0&\omega\\
+0&\omega'
+\end{bmatrix}
+$$
+
+Consider the following equality-form wide-sense structural equilibrium model:
+
+$$
+\begin{aligned}
+\mathbf p^\top\mathbf D(\mathbf p,z)
+&=\mathbf p^\top\mathbf S(\mathbf p,z)\\
+\mathbf D(\mathbf p,z)\mathbf1
+&=\mathbf S(\mathbf p,z)\mathbf1
+\end{aligned}
+$$
+
+The equilibrium price vector and firm activity level are, respectively,
+
+$$
+\mathbf p^*
+=
+\left(
+1,\,
+2,\,
+2\left(\frac{\omega'}{\omega}\right)^{1/3},\,
+\left(\frac{\omega}{\omega'}\right)^{2/3}
+\right)^\top
+$$
+
+and
+
+$$
+z^*
+=
+\frac12\omega^{2/3}{\omega'}^{1/3}
+$$
+
+The equilibrium product supply vector, factor demand vector, and consumer demand vector are
+
+$$
+\mathbf y^*
+=
+z^*(1,1)^\top
+$$
+
+$$
+\mathbf x^*
+=
+\left(
+\frac{\omega}{2},
+\frac{\omega'}{2}
+\right)^\top
+$$
+
+and
+
+$$
+\mathbf c^*
+=
+\left(
+z^*,
+z^*,
+\frac{\omega}{2},
+\frac{\omega'}{2}
+\right)^\top
+$$
+
+Hence the equilibrium demand and supply matrices are
+
+$$
+\mathbf D^*
+=
+\begin{bmatrix}
+0&z^*\\
+0&z^*\\
+\frac{\omega}{2}&\frac{\omega}{2}\\
+\frac{\omega'}{2}&\frac{\omega'}{2}
+\end{bmatrix},
+\qquad
+\mathbf S^*
+=
+\begin{bmatrix}
+z^*&0\\
+z^*&0\\
+0&\omega\\
+0&\omega'
+\end{bmatrix}
+$$
+
+The consumer's equilibrium utility level is
+
+$$
+u^*=z^*
+=
+\frac12\omega^{2/3}{\omega'}^{1/3}
+$$
+
+In particular, when $\omega=\omega'=100$,
+
+$$
+\mathbf p^*=(1,2,2,1)^\top,\qquad
+z^*=50,\qquad
+u^*=50
+$$
+
+and
+
+$$
+\mathbf D^*
+=
+\begin{bmatrix}
+0&50\\
+0&50\\
+50&50\\
+50&50
+\end{bmatrix},
+\qquad
+\mathbf S^*
+=
+\begin{bmatrix}
+50&0\\
+50&0\\
+0&100\\
+0&100
+\end{bmatrix}
+$$
+
+
+::: {#lst-gemb_CES_CET_jointProduction_nc4_na2}
+
+```{.julia include="code/gemb_CES_CET_jointProduction_nc4_na2_v2.jl"}
+```
+
+A $4\times2$ Equilibrium Model with CES Inputs and CET Outputs
+
+:::
+
+## Ad Valorem Tax and Ad Valorem Claim: A $3\times2$ Model
+### Ad Valorem Claim
+An ad valorem tax is levied as a fixed proportion of the value of a transaction, output, input, or other economic base. More generally, this concept can be extended to an ad valorem claim, which represents a right to claim a fixed proportion of a specified economic value. This concept provides a unified way to represent a variety of value-based claims in equilibrium models.
+
+1. Let $V$ denote the value base and $\tau$ the ad valorem claim rate. The value of the claim is $\tau V$. If the claim commodity has price $p_c$ and quantity $c$, then $p_c c=\tau V$.
+
+2. A positive claim rate, $\tau>0$, can represent an ad valorem tax, fee, or other positive value claim, while a negative claim rate, $\tau<0$, can represent an ad valorem subsidy or other reverse claim. Money and equity in equilibrium models can also be interpreted as forms of ad valorem claims.
+
+3. By treating an ad valorem claim as a commodity and incorporating it into demand, supply, and revenue-expenditure balance, ad valorem taxes, subsidies, value-sharing arrangements, rent claims, money, equity, and related institutions can be represented within a unified wide-sense structural equilibrium framework.
+
+4. Under an appropriate claim-based representation, profit rates, markup rates, saving rates, interest rates, rates of return, and ad valorem tax or subsidy rates can all be interpreted as ad valorem claim rates. In particular, money may serve as a claim-bearing commodity, while saving may be represented as the purchase of claims proportional to consumption expenditure.
+
+### A $3\times2$ Model with Ad Valorem Tax
+Assume the following:
+
+1. The economy contains three commodities: a product, labor, and a tax certificate. There are two economic agents: a firm and a consumer. Labor is taken as the numeraire commodity. 
+
+2. The firm produces and supplies the product according to the production function $\alpha x_2$, where $x_2$ denotes labor input and $\alpha>0$.
+
+3. The consumer has a labor endowment of $\omega$ and the utility function $x_1^\beta x_2^{1-\beta}$, where $x_1$ denotes the quantity of the product consumed and $x_2$ denotes the quantity of labor enjoyed by the consumer, or equivalently leisure, with $0<\beta<1$.
+
+4. An ad valorem tax is imposed on the product, and the tax revenue is transferred to the consumer. The tax rate satisfies $0<\tau<1$, so the firm pays a tax equal to the fraction $\tau$ of its product sales revenue $p_1y$. The consumer is endowed with one unit of the tax certificate.
+
+Let $\mathbf p:=(p_1,1,p_3)^\top$, let $y$ denote output, and let $w$ denote consumer income. The demand and supply matrices are
+
+$$
+\mathbf D(\mathbf p,w,y):=
+\begin{bmatrix}
+0 & \frac{\beta w}{p_1}\\
+\frac{y}{\alpha} & (1-\beta)w\\
+\frac{\tau p_1y}{p_3} & 0
+\end{bmatrix}
+$$
+
+and
+
+$$
+\mathbf S(y):=
+\begin{bmatrix}
+y & 0\\
+0 & \omega\\
+0 & 1
+\end{bmatrix}
+$$
+
+Solving the equality-form wide-sense structural equilibrium model gives
+
+$$
+\mathbf p^*
+=
+\left(
+\frac{1}{\alpha(1-\tau)},
+\,1,\,
+\frac{\beta\omega\tau}{1-\beta\tau}
+\right)^\top
+$$
+
+$$
+w^*
+=
+\frac{\omega}{1-\beta\tau}
+$$
+
+and
+
+$$
+y^*
+=
+\frac{\alpha\beta(1-\tau)\omega}{1-\beta\tau}
+$$
+
+The consumer's equilibrium utility level is
+
+$$
+u^*
+=
+\frac{
+\omega(\alpha\beta)^\beta(1-\beta)^{1-\beta}(1-\tau)^\beta
+}{
+1-\beta\tau
+}
+$$
+
+For $0<\tau<1$,
+
+$$
+\frac{\partial\ln u^*}{\partial\tau}
+=
+-\frac{\beta(1-\beta)\tau}
+{(1-\tau)(1-\beta\tau)}
+<0
+$$
+
+Hence, the consumer's equilibrium utility decreases as the ad valorem tax rate increases. The tax therefore generates a deadweight loss, or excess burden, in this example.
+
+For example, let $\alpha=2$, $\beta=1/2$, $\omega=90$, and $\tau=1/2$. The equilibrium is then particularly simple:
+
+$$
+\mathbf p^*=(1,1,30)^\top,\qquad
+w^*=120,\qquad
+y^*=60
+$$
+
+The consumer demands 60 units of the product and enjoys 60 units of labor, so the equilibrium utility level is $u^*=60$. The corresponding demand and supply matrices are
+
+$$
+\mathbf D^*
+=
+\begin{bmatrix}
+0&60\\
+30&60\\
+1&0
+\end{bmatrix},
+\qquad
+\mathbf S^*
+=
+\begin{bmatrix}
+60&0\\
+0&90\\
+0&1
+\end{bmatrix}
+$$
+
+Thus, all commodity markets clear exactly, and the revenue-expenditure balance condition is satisfied for both the firm and the consumer.
+
+
+
+
+::: {#lst-gemb_CD_adValoremTax_nc3_na2}
+
+```{.julia include="code/gemb_CD_adValoremTax_nc3_na2_v2.jl"}
+```
+A $3\times2$ Equilibrium Model with an Ad Valorem Product Tax
+
+:::
+
+
+## Specific Tax: A $3\times2$ Model
+
+Consider the same economy as in the previous section, but replace the ad valorem tax with a specific tax on the product. Let $\tau>0$ denote the tax per unit of output. The firm therefore pays $\tau y$ in taxes when producing $y$ units of the product, and the tax revenue is transferred to the consumer through the tax certificate.
+
+Let $\mathbf p:=(p_1,1,p_3)^\top$, where labor is the numeraire commodity. The demand matrix becomes
+
+$$
+\mathbf D(\mathbf p,w,y)
+=
+\begin{bmatrix}
+0 & \frac{\beta w}{p_1}\\
+\frac{y}{\alpha} & (1-\beta)w\\
+\frac{\tau y}{p_3} & 0
+\end{bmatrix}
+$$
+
+while the supply matrix remains
+
+$$
+\mathbf S(y)
+=
+\begin{bmatrix}
+y & 0\\
+0 & \omega\\
+0 & 1
+\end{bmatrix}
+$$
+
+Solving the equality-form wide-sense structural equilibrium model gives
+
+$$
+\mathbf p^*
+=
+\left(
+\frac{1}{\alpha}+\tau,
+\,1,\,
+\frac{\alpha\beta\omega\tau}
+{1+\alpha\tau(1-\beta)}
+\right)^\top
+$$
+
+$$
+w^*
+=
+\frac{(1+\alpha\tau)\omega}
+{1+\alpha\tau(1-\beta)}
+$$
+
+and
+
+$$
+y^*
+=
+\frac{\alpha\beta\omega}
+{1+\alpha\tau(1-\beta)}
+$$
+
+The consumer's equilibrium utility level is
+
+$$
+u^*
+=
+\frac{
+\omega(\alpha\beta)^\beta
+\big((1-\beta)(1+\alpha\tau)\big)^{1-\beta}
+}{
+1+\alpha(1-\beta)\tau
+}
+$$
+
+For example, let $\alpha=2$, $\beta=1/2$, $\omega=90$, and $\tau=1/2$. The equilibrium is
+
+$$
+\mathbf p^*=(1,1,30)^\top,\qquad
+w^*=120,\qquad
+y^*=60,\qquad
+u^*=60
+$$
+
+For these parameter values, the numerical equilibrium happens to coincide with that of the ad valorem tax example in the previous section, although the definitions of the two tax rates are different.
+
+::: {#lst-gemb_CD_specificTax_nc3_na2}
+
+```{.julia include="code/gemb_CD_specificTax_nc3_na2_v1.jl"}
+```
+
+A $3\times2$ Equilibrium Model with a Specific Tax
+
+:::
+
+
+## Non-rival Service and Lindahl Prices: A $3\times3$ Model
+
+Assume the following:
+
+1. The economy contains three commodities: service 1, service 2, and labor. There are three economic agents: one firm and two consumers. Labor is taken as the numeraire commodity.
+
+2. The firm provides a non-rival service, such as residential security service. Each unit of labor input provides one unit of personalized service to each consumer. These personalized services are referred to as service 1 and service 2, respectively.
+
+3. Both consumers demand their personalized service and labor and have Cobb--Douglas utility functions. For consumer 1, the expenditure shares on service 1 and labor are $\beta_1$ and $1-\beta_1$, respectively. For consumer 2, the corresponding shares on service 2 and labor are $\beta_2$ and $1-\beta_2$.
+
+4. Consumers 1 and 2 are endowed with $\omega_1>0$ and $\omega_2>0$ units of labor, respectively.
+
+Let $\mathbf p:=(p_1,p_2,1)^\top$, let $y$ denote the service level, and let the consumer-income vector be $\mathbf w=(w_1,w_2)^\top$. The demand and supply matrices are
+
+$$
+\mathbf D(\mathbf p,\mathbf w,y)
+:=
+\begin{bmatrix}
+0 & \frac{\beta_1w_1}{p_1} & 0\\
+0 & 0 & \frac{\beta_2w_2}{p_2}\\
+y & (1-\beta_1)w_1 & (1-\beta_2)w_2
+\end{bmatrix}
+$$
+
+and
+
+$$
+\mathbf S(y)
+:=
+\begin{bmatrix}
+y & 0 & 0\\
+y & 0 & 0\\
+0 & \omega_1 & \omega_2
+\end{bmatrix}
+$$
+
+Solving the equality-form wide-sense structural equilibrium model gives
+
+$$
+\mathbf p^*
+=
+\left(
+\frac{\beta_1\omega_1}
+{\beta_1\omega_1+\beta_2\omega_2},
+\frac{\beta_2\omega_2}
+{\beta_1\omega_1+\beta_2\omega_2},
+1
+\right)^\top
+$$
+
+$$
+\mathbf w^*
+=
+(\omega_1,\omega_2)^\top
+$$
+
+and
+
+$$
+y^*
+=
+\beta_1\omega_1+\beta_2\omega_2
+$$
+
+The personalized equilibrium prices satisfy
+
+$$
+p_1^*+p_2^*=1
+$$
+
+so the sum of the two consumers' personalized prices equals the marginal cost of providing the non-rival service. The prices $p_1^*$ and $p_2^*$ can therefore be interpreted as Lindahl prices: each consumer faces a personalized price for the same underlying non-rival service, while the sum of these prices covers its unit production cost.
+
+For example, let $\beta_1=1/4$, $\beta_2=2/3$, $\omega_1=120$, and $\omega_2=90$. The equilibrium is
+
+$$
+\mathbf p^*
+=
+\left(
+\frac13,\frac23,1
+\right)^\top,
+\qquad
+\mathbf w^*
+=
+(120,90)^\top,
+\qquad
+y^*=90
+$$
+
+Both consumers receive 90 units of the non-rival service. Consumer 1 enjoys 90 units of labor, whereas consumer 2 enjoys 30 units. The corresponding demand and supply matrices are
+
+$$
+\mathbf D^*
+=
+\begin{bmatrix}
+0&90&0\\
+0&0&90\\
+90&90&30
+\end{bmatrix},
+\qquad
+\mathbf S^*
+=
+\begin{bmatrix}
+90&0&0\\
+90&0&0\\
+0&120&90
+\end{bmatrix}
+$$
+
+The two personalized Lindahl prices are therefore $1/3$ and $2/3$, reflecting the consumers' different valuations of the non-rival service, while their sum remains equal to the unit cost of providing it.
+
+::: {#lst-gemb_CD_nonRivalService_Lindahl_nc3_na3}
+
+```{.julia include="code/gemb_CD_nonRivalService_Lindahl_nc3_na3_v1.jl"}
+```
+
+A $3\times3$ Equilibrium Model with a Non-rival Service and Lindahl Prices
+
+:::
+
+
+## Capital Rental and Equity: A $4\times3$ Model
+
+Assume the following (see Torres, 2016, Tables 2.1 and 2.2):
+
+1. The economy contains four commodities: a product, labor, capital services, and equity. There are three economic agents: a production firm, a consumer, and a capital-rental firm. Equity, money, and ad valorem tax certificates can all be regarded as ad valorem claims.
+
+2. The production firm produces the product according to $y=x_2^{1-\beta_1}x_3^{\beta_1}$, where $x_2$ and $x_3$ denote labor and capital-service inputs, respectively, with $0<\beta_1<1$.
+
+3. The consumer has utility function $u=x_1^{\beta_2}x_2^{1-\beta_2}$, where $0<\beta_2<1$, and is endowed with one unit of labor and one unit of equity.
+
+4. The capital-rental firm uses one unit of the product to provide one unit of capital services and recover $1-\delta$ units of the product after depreciation. Let $r>0$ denote the required rate of return. For each unit of activity, the firm demands equity whose value is $rp_1$.
+
+Let $\mathbf p=(p_1,p_2,p_3,p_4)^\top$, and let $y$, $u$, and $k$ denote the activity levels of the production firm, the consumer, and the capital-rental firm, respectively. The demand matrix is
+
+$$
+\mathbf D(\mathbf p,y,u,k)
+=
+\begin{bmatrix}
+0
+&
+u\left(\frac{\beta_2}{1-\beta_2}\frac{p_2}{p_1}\right)^{1-\beta_2}
+&
+k
+\\
+y\left(\frac{1-\beta_1}{\beta_1}\frac{p_3}{p_2}\right)^{\beta_1}
+&
+u\left(\frac{1-\beta_2}{\beta_2}\frac{p_1}{p_2}\right)^{\beta_2}
+&
+0
+\\
+y\left(\frac{\beta_1}{1-\beta_1}\frac{p_2}{p_3}\right)^{1-\beta_1}
+&
+0
+&
+0
+\\
+0
+&
+0
+&
+\frac{rp_1}{p_4}k
+\end{bmatrix}
+$$
+
+and the supply matrix is
+
+$$
+\mathbf S(y,k)
+=
+\begin{bmatrix}
+y&0&(1-\delta)k\\
+0&1&0\\
+0&0&k\\
+0&1&0
+\end{bmatrix}
+$$
+
+By solving the wide-sense structural equilibrium model, the analytical solution for the equilibrium prices can be obtained.
+Taking the product as the numeraire commodity, so that $p_1^*=1$, the analytical equilibrium prices are
+
+$$
+p_3^*=r+\delta,
+\qquad
+p_2^*
+=
+(1-\beta_1)
+\left(
+\frac{\beta_1}{r+\delta}
+\right)^{\frac{\beta_1}{1-\beta_1}}
+$$
+
+and
+
+$$
+p_4^*
+=
+\frac{
+r\beta_1\beta_2
+}{
+r(1-\beta_1\beta_2)+\delta(1-\beta_1)
+}
+p_2^*
+$$
+
+
+For $r=1/0.97-1\approx0.030928$, $\delta=0.06$, $\beta_1=0.35$, and $\beta_2=0.4$, the equilibrium price vector is
+
+$$
+\mathbf p^*
+\approx
+(1,\ 1.343115,\ 0.090928,\ 0.088654)^\top
+$$
+
+
+::: {#lst-gemb_CD_capitalRentalEquity_nc4_na3}
+
+```{.julia include="code/gemb_CD_capitalRentalEquity_nc4_na3_v3.jl"}
+```
+
+A $4\times3$ Equilibrium Model with Capital Rental and Equity Claims
+
+:::

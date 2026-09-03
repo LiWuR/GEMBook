@@ -8,3 +8,6 @@
 
 *_files/
 *.html
+
+/site_libs/
+/GeneralEquilibriumModeling.jl-and-Structural-Equilibrium-Models.tex

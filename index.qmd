@@ -18,3 +18,8 @@ This book provides a concise introduction to applied general equilibrium modelin
 4. This book is organized largely as a handbook of examples. A sequence of models, progressing from simple to more complex settings, is used to introduce the construction, representation, numerical solution, and economic interpretation of general equilibrium models.
 
 5. The book is intended as a concise overview. Its emphasis is on the basic ideas, model structures, and practical methods of general equilibrium modeling rather than on extensive literature reviews, detailed theoretical proofs, or systematic instruction in programming syntax. Some Julia examples in this book have been adapted from examples in the author's earlier R packages, `GE` and `CGE`.
+
+
+---
+
+**License.** Except where otherwise noted, the book content is licensed under the [Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License](https://creativecommons.org/licenses/by-nc-nd/4.0/). The Julia programs in the `code/` directory are licensed separately under the MIT License.

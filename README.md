@@ -1,6 +1,6 @@
 # GeneralEquilibriumModeling.jl and Structural Equilibrium Models
 
-## A Cookbook
+*A Cookbook*
 
 This repository contains the source files and companion programs for the book *GeneralEquilibriumModeling.jl and Structural Equilibrium Models: A Cookbook*.
 

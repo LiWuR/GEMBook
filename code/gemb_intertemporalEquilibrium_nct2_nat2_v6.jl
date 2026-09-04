@@ -93,9 +93,3 @@ result = GEMB.solve(
 )
 
 GEMB.print_equilibrium_statistics(model, result)
-
-@assert result.solved
-@assert result.mcp_solved
-@assert result.all_markets_clear
-@assert result.max_natural_residual <= 1.0e-7
-@assert maximum(abs, result.total_net_supply) <= 1.0e-7

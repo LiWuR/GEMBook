@@ -1,5 +1,5 @@
 # Intertemporal Equilibrium
-
+<!-- liwu1 -->
 ## Intertemporal Model Construction
 
 The GEMB high-level framework does not use a separate model type for intertemporal equilibrium. A finite-horizon intertemporal economy is constructed as an ordinary `GEMBModel` in which time is represented by the `period` axis of dated commodities. Thus, the same behavioral specifications and equilibrium solver used for static models can also be used for intertemporal models.
@@ -58,8 +58,6 @@ claim_rate=GEMB.ByPeriod([0.10, 0.15, 0.20])
 ```
 
 assigns the three values to the corresponding template periods. A scalar value, by contrast, is used unchanged in every period. `RelativePeriod` and `ByPeriod` thus serve different purposes: the former changes the dated object referred to by an agent, whereas the latter changes a parameter value across repeated agents.
-
-Intertemporal claims, money, bonds, capital, and other dated objects do not require special commodity types. They can be represented as ordinary dated commodities and connected to economic agents through the usual GEMB demand, supply, endowment, claim, and auxiliary-condition mechanisms. Cross-period equilibrium relationships that cannot be represented directly by standard behavioral specifications can also be introduced through condition agents and observed equilibrium variables.
 
 The basic construction procedure is therefore the same as for a static GEMB model: define dated commodities with `CommoditySpec`, create a `GEMBModel`, add concrete agents with `add_agent!`, expand repeated structures with `AgentTemplate` and `add_agents!` when necessary, and finally solve the resulting model with the ordinary GEMB equilibrium solver. The intertemporal tools mainly provide a convenient way to organize dated commodities, repeated agents, relative-period references, and period-varying parameters, while leaving the underlying equilibrium framework unchanged.
 
@@ -500,7 +498,7 @@ Consumer $i$ is endowed with 100 units of commodities $i$ and $i+1$. Hence its i
 
 The preference shares of consumers 1 and 5 are endogenous. Their demands are therefore specified by `MarshallDemandConsumerSpec`. Consumer 1 observes the endogenous variables $\beta_1$ and $\beta_2$ and has expenditure shares $\beta_1$, $\beta_2$, and $1-\beta_1-\beta_2$. Consumer 5 similarly observes $\bar\beta_1$ and $\bar\beta_2$ and has expenditure shares $\bar\beta_1$, $\bar\beta_2$, and $1-\bar\beta_1-\bar\beta_2$.
 
-A `ConditionAgentSpec` is introduced to determine the steady-state price path and the four endpoint preference parameters. Its endogenous variables are
+A `ConditionAgentSpec` is introduced to impose the geometric price-path restriction and to introduce the four endpoint preference parameters as endogenous variables. Its endogenous variables are
 
 $$
 (\log q,\beta_1,\beta_2,\bar\beta_1,\bar\beta_2)

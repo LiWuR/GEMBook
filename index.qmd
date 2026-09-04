@@ -1,9 +1,3 @@
-::: {.callout-warning}
-🚧 Work in Progress
-
-This manuscript is currently a draft. If you spot any errors or typos, or have suggestions, please feel free to submit feedback via [GitHub Issues](https://github.com/LiwuR/gembook/issues).
-:::
-
 <!-- liwu1 -->
 # Preface {.unnumbered}
 
@@ -19,6 +13,7 @@ This book provides a concise introduction to applied general equilibrium modelin
 
 5. The book is intended as a concise overview. Its emphasis is on the basic ideas, model structures, and practical methods of general equilibrium modeling rather than on extensive literature reviews, detailed theoretical proofs, or systematic instruction in programming syntax. Some Julia examples in this book have been adapted from examples in the author's earlier R packages, `GE` and `CGE`.
 
+If you spot any errors or typos, or have suggestions for improvement, please feel free to submit them via [GitHub Issues](https://github.com/LiwuR/gembook/issues).
 
 ---
 

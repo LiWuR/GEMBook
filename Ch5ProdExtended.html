@@ -918,14 +918,14 @@ Listing&nbsp;5.4: An Equilibrium Model with Exponential Production and an Endoge
 <h3 data-number="5.4.1" class="anchored" data-anchor-id="degree-one-homogenization-and-the-scale-claim-rate"><span class="header-section-number">5.4.1</span> Degree-One Homogenization and the Scale Claim Rate</h3>
 <p>Degree-one homogenization is commonly used to transform a production function with decreasing returns to scale into one with constant returns to scale (McKenzie, 2002, p.&nbsp;216). More generally, the method can also be applied to production functions with increasing or variable returns to scale, thereby providing a unified constant-returns-to-scale representation for different types of returns to scale.</p>
 <p>Consider a firm with production function <span class="math inline">\(y=f(\mathbf x)\)</span>, where <span class="math inline">\(\mathbf x=(x_1,\ldots,x_n)^\top\)</span> denotes ordinary production inputs. The firm is assumed to follow the marginal-pricing principle, represented in GEMB by the first-order stationarity conditions with <code>behavior=:stationary</code>.</p>
-<p>Introduce an additional commodity, called a scale claim, with quantity <span class="math inline">\(c&gt;0\)</span>, and define the degree-one homogenized production function</p>
+<p>Introduce an additional commodity, called a scale claim, with quantity <span class="math inline">\(c_s&gt;0\)</span>, and define the degree-one homogenized production function</p>
 <p><span class="math display">\[
-g(\mathbf x,c)
+g(\mathbf x,c_s)
 =
-c f\left(\frac{\mathbf x}{c}\right)
+c_s f\left(\frac{\mathbf x}{c_s}\right)
 \]</span></p>
-<p>where <span class="math inline">\(\mathbf x/c=(x_1/c,\ldots,x_n/c)^\top\)</span>. The function <span class="math inline">\(g(\mathbf x,c)\)</span> is homogeneous of degree one in <span class="math inline">\((\mathbf x,c)\)</span>. Suppose the aggregate supply of the scale claim is normalized to one. Market clearing then implies <span class="math inline">\(c=1\)</span>.</p>
-<p>Let <span class="math inline">\(p_y\)</span> denote the output price, <span class="math inline">\(\mathbf p_x=(p_{x1},\ldots,p_{xn})^\top\)</span> the prices of ordinary inputs, and <span class="math inline">\(p_c\)</span> the price of the scale claim. Under marginal pricing, the stationarity conditions at <span class="math inline">\(c=1\)</span> imply</p>
+<p>where <span class="math inline">\(\mathbf x/c_s=(x_1/c_s,\ldots,x_n/c_s)^\top\)</span>. The function <span class="math inline">\(g(\mathbf x,c_s)\)</span> is homogeneous of degree one in <span class="math inline">\((\mathbf x,c_s)\)</span>. Suppose the aggregate supply of the scale claim is normalized to one. Market clearing then implies <span class="math inline">\(c_s=1\)</span>.</p>
+<p>Let <span class="math inline">\(p_y\)</span> denote the output price, <span class="math inline">\(\mathbf p_x=(p_{x1},\ldots,p_{xn})^\top\)</span> the prices of ordinary inputs, and <span class="math inline">\(p_c\)</span> the price of the scale claim. Under marginal pricing, the stationarity conditions at <span class="math inline">\(c_s=1\)</span> imply</p>
 <p><span class="math display">\[
 \mathbf p_x
 =
@@ -946,7 +946,7 @@ f(\mathbf x)
 <p><span class="math display">\[
 p_yy
 =
-\mathbf p_x^\top\mathbf x+p_cc
+\mathbf p_x^\top\mathbf x+p_c c_s
 \]</span></p>
 <p>Define the scale claim rate as the ratio of the value of the scale claim to the value of ordinary inputs. Then</p>
 <p><span class="math display">\[
@@ -974,7 +974,7 @@ p_yy
 </section>
 <section id="equivalence-under-degree-one-homogenization" class="level3" data-number="5.4.2">
 <h3 data-number="5.4.2" class="anchored" data-anchor-id="equivalence-under-degree-one-homogenization"><span class="header-section-number">5.4.2</span> Equivalence under Degree-One Homogenization</h3>
-<p>Degree-one homogenization expands the commodity space by introducing the scale claim while preserving the original production technology when <span class="math inline">\(c=1\)</span>. In particular,</p>
+<p>Degree-one homogenization expands the commodity space by introducing the scale claim while preserving the original production technology when <span class="math inline">\(c_s=1\)</span>. In particular,</p>
 <p><span class="math display">\[
 g(\mathbf x,1)=f(\mathbf x)
 \]</span></p>
@@ -984,7 +984,7 @@ g(\mathbf x,1)=f(\mathbf x)
 =
 \nabla f(\mathbf x)
 \]</span></p>
-<p>Therefore, when the scale-claim market clears at <span class="math inline">\(c=1\)</span>, the technological relation between the original inputs and output is unchanged, and the marginal-pricing conditions for the ordinary inputs are identical to those in the original model. The additional stationarity condition associated with the scale claim implies</p>
+<p>Therefore, when the scale-claim market clears at <span class="math inline">\(c_s=1\)</span>, the technological relation between the original inputs and output is unchanged, and the marginal-pricing conditions for the ordinary inputs are identical to those in the original model. The additional stationarity condition associated with the scale claim implies</p>
 <p><span class="math display">\[
 p_c
 =
@@ -993,7 +993,7 @@ p_yf(\mathbf x)
 \mathbf p_x^\top\mathbf x
 \]</span></p>
 <p>Thus, the difference between output value and the value of ordinary inputs under marginal pricing is represented as the value of the scale claim. The scale-claim price <span class="math inline">\(p_c\)</span> is an endogenous equilibrium price determined jointly with the other prices and quantities.</p>
-<p>Hence, on the production side, degree-one homogenization provides an equivalent representation of the original technology and its marginal-pricing conditions in an expanded commodity space. Equivalence of the complete equilibrium system additionally requires consistency in the treatment of the scale claim. Its aggregate supply must be normalized so that market clearing implies <span class="math inline">\(c=1\)</span>, and its endowment must be allocated so that the resulting scale-claim value corresponds to the distribution of the residual between output value and ordinary-input value in the original model. All other endowments, technologies, preferences, and market-clearing conditions remain unchanged.</p>
+<p>Hence, on the production side, degree-one homogenization provides an equivalent representation of the original technology and its marginal-pricing conditions in an expanded commodity space. Equivalence of the complete equilibrium system additionally requires consistency in the treatment of the scale claim. Its aggregate supply must be normalized so that market clearing implies <span class="math inline">\(c_s=1\)</span>, and its endowment must be allocated so that the resulting scale-claim value corresponds to the distribution of the residual between output value and ordinary-input value in the original model. All other endowments, technologies, preferences, and market-clearing conditions remain unchanged.</p>
 </section>
 <section id="power-and-exponential-production-functions" class="level3" data-number="5.4.3">
 <h3 data-number="5.4.3" class="anchored" data-anchor-id="power-and-exponential-production-functions"><span class="header-section-number">5.4.3</span> Power and Exponential Production Functions</h3>
@@ -1003,11 +1003,11 @@ f(x)=\alpha x^\theta
 \]</span></p>
 <p>degree-one homogenization gives</p>
 <p><span class="math display">\[
-g(x,c)
+g(x,c_s)
 =
-c f\left(\frac{x}{c}\right)
+c_s f\left(\frac{x}{c_s}\right)
 =
-\alpha x^\theta c^{1-\theta}
+\alpha x^\theta c_s^{1-\theta}
 \]</span></p>
 <p>For the exponential branch of the production function,</p>
 <p><span class="math display">\[
@@ -1015,13 +1015,13 @@ f(x)=\alpha\theta^x,\qquad x\geq\xi&gt;0
 \]</span></p>
 <p>degree-one homogenization gives</p>
 <p><span class="math display">\[
-g(x,c)
+g(x,c_s)
 =
-c f\left(\frac{x}{c}\right)
+c_s f\left(\frac{x}{c_s}\right)
 =
-\alpha c\theta^{x/c},
+\alpha c_s\theta^{x/c_s},
 \qquad
-\frac{x}{c}\geq\xi&gt;0,\quad c&gt;0
+\frac{x}{c_s}\geq\xi&gt;0,\quad c_s&gt;0
 \]</span></p>
 <p>In GEMB, the scale claim commodity can be included as an additional production input in a <code>ProductionFunctionSpec</code>, with its aggregate supply normalized to one and the firm specified with <code>behavior=:stationary</code>. When the marginal products contain a common strictly positive factor, this factor may be omitted to obtain a scaled marginal-product function. Such scaling changes only the production multiplier and leaves equilibrium quantities and prices unchanged.</p>
 <p>The power production case is implemented in <a href="#lst-gemb_powerProduction_degreeOneHomogenization" class="quarto-xref">Listing&nbsp;<span>5.5</span></a>.</p>
